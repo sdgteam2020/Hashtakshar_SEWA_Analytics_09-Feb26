@@ -1,0 +1,12 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/HastaksharSewaAnalytics.Application/bin
+/HastaksharSewaAnalytics.Application/obj
+/HastaksharSewaAnalytics.Domain/bin
+/HastaksharSewaAnalytics.Domain/obj
+/HastaksharSewaAnalytics.Infrastructure/bin
+/HastaksharSewaAnalytics.Infrastructure/obj
+/HastaksharSewaAnalytics.Presentation/bin
+/HastaksharSewaAnalytics.Presentation/obj
