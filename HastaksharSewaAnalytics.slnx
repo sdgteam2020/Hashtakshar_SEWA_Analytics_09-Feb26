@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="HastaksharSewaAnalytics.Application/HastaksharSewaAnalytics.Application.csproj" />
+  <Project Path="HastaksharSewaAnalytics.Domain/HastaksharSewaAnalytics.Domain.csproj" />
+  <Project Path="HastaksharSewaAnalytics.Infrastructure/HastaksharSewaAnalytics.Infrastructure.csproj" />
+  <Project Path="HastaksharSewaAnalytics.Presentation/HastaksharSewaAnalytics.Presentation.csproj" />
+</Solution>

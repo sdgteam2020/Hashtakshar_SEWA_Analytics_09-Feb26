@@ -1,0 +1,813 @@
+/* =====================================================
+   GLOBAL HTML / BOOTSTRAP BASE (KEEP)
+   ===================================================== */
+
+html {
+    font-size: 14px;
+    height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+/* Bootstrap focus */
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
+.form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Footer pinned layout */
+body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+main {
+    flex: 1;
+}
+
+/* Footer theme */
+.app-footer {
+    border-top: 1px solid rgba(255,255,255,.06);
+    background: linear-gradient(180deg, #0c1f14 0%, #1b3526 100%);
+    color: rgba(255,255,255,.65);
+    padding: .75rem 0;
+}
+
+    .app-footer a {
+        color: rgba(255,255,255,.75);
+        text-decoration: none;
+    }
+
+        .app-footer a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+/* Keep your existing RTL placeholder alignment */
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+
+/* =====================================================
+   THEME TOKENS (SAFE GLOBAL)
+   ===================================================== */
+
+:root {
+    /* Background layers */
+    --bg: #0b1d13;
+    --bg-2: #0f2418;
+    /* Surfaces / cards */
+    --panel: #14281c;
+    --panel-2: #1c3926;
+    --panel-3: #274532;
+    /* Typography */
+    --text: #ecf6e8;
+    --muted: #cbdac6;
+    /* Accents */
+    --accent: #a5cf82;
+    --accent-2: #8bbf6c;
+    /* Supporting greens */
+    --olive: #223d2b;
+    --olive-soft: #2c4d38;
+    /* Status colors */
+    --success: #6fb36a;
+    --warning: #c6b54a;
+    --danger: #bb4a4a;
+}
+
+
+/* =====================================================
+   GLOBAL THEME WRAPPER
+   Apply on ALL pages by using:
+     <body class="hs-theme">
+   ===================================================== */
+
+.hs-theme {
+    background: radial-gradient(1200px 600px at -10% -20%, #173422 0%, transparent 60%), radial-gradient(1200px 600px at 110% 120%, #173422 0%, transparent 60%), linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    color: var(--text);
+}
+
+    /* Ensure main spans full height under flex body */
+    .hs-theme main {
+        min-height: 1px;
+    }
+
+    /* =====================================================
+   IMPORTANT FIX: FORCE LIGHT TEXT + ICON COLOR
+   (Bootstrap default colors are dark; this prevents black text/icons)
+   ===================================================== */
+
+    .hs-theme,
+    .hs-theme body,
+    .hs-theme .navbar,
+    .hs-theme .card,
+    .hs-theme .list-group-item,
+    .hs-theme .dropdown-menu,
+    .hs-theme .nav-link,
+    .hs-theme .btn,
+    .hs-theme .form-control,
+    .hs-theme .form-select,
+    .hs-theme .table,
+    .hs-theme .badge,
+    .hs-theme .input-group-text,
+    .hs-theme .modal-content,
+    .hs-theme .offcanvas,
+    .hs-theme .accordion,
+    .hs-theme .pagination,
+    .hs-theme .page-link {
+        color: var(--text);
+    }
+
+        .hs-theme h1, .hs-theme h2, .hs-theme h3,
+        .hs-theme h4, .hs-theme h5, .hs-theme h6,
+        .hs-theme p, .hs-theme span, .hs-theme label,
+        .hs-theme th, .hs-theme td {
+            color: inherit;
+        }
+
+        /* Muted text */
+        .hs-theme .text-muted,
+        .hs-theme .muted,
+        .hs-theme small {
+            color: var(--muted) !important;
+        }
+
+        /* Prevent Bootstrap text utility classes from making text dark */
+        .hs-theme .text-dark,
+        .hs-theme .text-body,
+        .hs-theme .text-secondary {
+            color: var(--text) !important;
+        }
+
+        /* Links */
+        .hs-theme a,
+        .hs-theme .nav-link {
+            color: var(--muted);
+        }
+
+            .hs-theme a:hover,
+            .hs-theme .nav-link:hover {
+                color: var(--text);
+            }
+
+        /* Icons inherit text color by default */
+        .hs-theme .bi,
+        .hs-theme i,
+        .hs-theme svg {
+            color: inherit;
+        }
+
+
+        /* =====================================================
+   APP NAVBAR (your layout uses .app-navbar)
+   ===================================================== */
+
+        .hs-theme .app-navbar {
+            background: linear-gradient(180deg, #0c1f14 0%, #1b3526 100%);
+            border-bottom: 1px solid rgba(255,255,255,.06);
+            box-shadow: 0 6px 18px rgba(0,0,0,.35);
+        }
+
+        /* Small square emblem placeholder */
+        .hs-theme .emblem {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: radial-gradient(circle at 30% 30%, #c9d6bd 0 35%, transparent 36%), linear-gradient(135deg,#a9b99c,#6a7f66);
+            margin-right: .5rem;
+            display: inline-block;
+        }
+
+
+        /* =====================================================
+   SECTION TABS (Bootstrap nav-tabs refinements)
+   ===================================================== */
+
+        .hs-theme .nav-tabs {
+            border-bottom: 1px solid rgba(255,255,255,.06) !important;
+        }
+
+            .hs-theme .nav-tabs .nav-link {
+                border: 0;
+                position: relative;
+                background: transparent;
+            }
+
+                .hs-theme .nav-tabs .nav-link.active {
+                    color: var(--text);
+                    background: transparent;
+                }
+
+                    .hs-theme .nav-tabs .nav-link.active::after,
+                    .hs-theme .nav-tabs .nav-link:hover::after {
+                        content: "";
+                        position: absolute;
+                        left: 0;
+                        right: 0;
+                        bottom: -1px;
+                        height: 2px;
+                        background: linear-gradient(90deg, rgba(255,255,255,.0), var(--accent), rgba(255,255,255,.0));
+                    }
+
+
+        /* =====================================================
+   CARDS (base panel surface)
+   ===================================================== */
+
+        .hs-theme .card {
+            background: var(--panel);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.25);
+        }
+
+        /* Titles */
+        .hs-theme .card-title {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        /* Optional glow helpers */
+        .hs-theme .kpi-glow,
+        .hs-theme .panel-glow {
+            box-shadow: 0 8px 24px rgba(0,0,0,.25), 0 0 0 1px rgba(165,207,130,.10), 0 0 28px rgba(165,207,130,.12);
+        }
+
+
+        /* =====================================================
+   KPI CARDS
+   ===================================================== */
+
+        .hs-theme .kpi {
+            background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel-3) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .hs-theme .kpi::before {
+                content: "";
+                position: absolute;
+                inset: auto -20% 0 -20%;
+                top: -200%;
+                height: 200%;
+                transform: rotate(25deg);
+                background: radial-gradient(circle at 50% 30%, rgba(255,255,255,.06), transparent 50%);
+                transition: transform .6s ease, top .6s ease;
+            }
+
+            .hs-theme .kpi:hover::before {
+                top: -120%;
+                transform: rotate(20deg);
+            }
+
+            .hs-theme .kpi .kpi-title {
+                font-size: 1.05rem;
+                color: var(--muted);
+            }
+
+            .hs-theme .kpi .kpi-value {
+                font-size: 2.4rem;
+                font-weight: 700;
+                letter-spacing: .5px;
+            }
+
+        /* Icon pill */
+        .hs-theme .icon-pill {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--olive-soft);
+            color: var(--accent);
+            font-size: 1.4rem;
+            box-shadow: inset 0 0 8px rgba(0,0,0,.35), 0 0 10px rgba(165,207,130,.15);
+        }
+
+        /* You had this helper in dashboard.css */
+        .hs-theme .img-bi {
+            color: var(--accent);
+            font-size: 1.4rem;
+        }
+
+
+        /* =====================================================
+   MAP PANEL (placeholder)
+   ===================================================== */
+
+        .hs-theme .map {
+            height: 300px;
+            background: linear-gradient(135deg, rgba(255,255,255,.02) 25%, transparent 25%) -20px 0/40px 40px, linear-gradient(225deg, rgba(255,255,255,.02) 25%, transparent 25%) -20px 0/40px 40px, linear-gradient(315deg, rgba(255,255,255,.02) 25%, transparent 25%) 0px 0/40px 40px, linear-gradient(45deg, rgba(255,255,255,.02) 25%, transparent 25%) 0px 0/40px 40px, linear-gradient(180deg, #203b2b, #183323);
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hs-theme .pin {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 6px rgba(165,207,130,.15);
+        }
+
+            .hs-theme .pin.p2 {
+                background: #d6c24b;
+            }
+            /* warn */
+            .hs-theme .pin.p3 {
+                background: #86b98a;
+            }
+        /* ok */
+
+
+        /* =====================================================
+   STATUS BARS (Alerts)
+   ===================================================== */
+
+        .hs-theme .bar {
+            height: 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.06);
+            overflow: hidden;
+        }
+
+            .hs-theme .bar > span {
+                display: block;
+                height: 100%;
+                background: linear-gradient(90deg, rgba(0,0,0,.08), rgba(255,255,255,.06));
+            }
+
+        .hs-theme .bar-danger > span {
+            background: linear-gradient(90deg, var(--danger), #803434);
+        }
+
+        .hs-theme .bar-warning > span {
+            background: linear-gradient(90deg, var(--warning), #6e6328);
+        }
+
+        .hs-theme .bar-success > span {
+            background: linear-gradient(90deg, var(--success), #3b6f3a);
+        }
+
+
+        /* =====================================================
+   TREND CHART (SVG sparkline style)
+   ===================================================== */
+
+        .hs-theme .trend {
+            height: 180px;
+            background: linear-gradient(180deg, #203b2b, #1b3325);
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .hs-theme .trend svg {
+                position: absolute;
+                inset: 0;
+            }
+
+            .hs-theme .trend .grid line {
+                stroke: rgba(255,255,255,.05);
+                stroke-width: 1;
+            }
+
+            .hs-theme .trend path {
+                fill: none;
+                stroke: var(--accent);
+                stroke-width: 3;
+                filter: drop-shadow(0 2px 2px rgba(0,0,0,.4));
+            }
+
+
+        /* =====================================================
+   DONUT CHART (CSS-only)
+   ===================================================== */
+
+        .hs-theme .donut {
+            --p1: 62;
+            --p2: 26;
+            --p3: 12;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: conic-gradient( var(--success) 0 calc(var(--p1)*1%), var(--warning) 0 calc((var(--p1) + var(--p2))*1%), #637361 0 100% );
+            margin: auto;
+            position: relative;
+            box-shadow: inset 0 0 0 16px var(--panel);
+        }
+
+        .hs-theme .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: .5rem;
+        }
+
+
+        /* =====================================================
+   TABLES & FORMS (dark theme harmony)
+   ===================================================== */
+
+        .hs-theme .table {
+            --bs-table-color: var(--text);
+            --bs-table-bg: transparent;
+        }
+
+        .hs-theme .form-control,
+        .hs-theme .form-select {
+            color: var(--text);
+            background-color: #102217;
+            border-color: rgba(255,255,255,.08);
+        }
+
+            .hs-theme .form-control::placeholder {
+                color: rgba(255,255,255,.5);
+            }
+
+
+        /* =====================================================
+   MODAL — Modern Olive
+   ===================================================== */
+
+        .hs-theme .modal-backdrop.show {
+            background-color: #07140d;
+            opacity: .75;
+            backdrop-filter: blur(2px);
+        }
+
+        .hs-theme .modal-olive .modal-content {
+            background: var(--panel);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 18px;
+            box-shadow: 0 16px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(165,207,130,.10), 0 0 28px rgba(165,207,130,.12);
+        }
+
+        .hs-theme .modal-olive .modal-header {
+            background: linear-gradient(180deg, var(--panel-2), var(--panel-3));
+            color: var(--text);
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            position: relative;
+        }
+
+            .hs-theme .modal-olive .modal-header::after {
+                content: "";
+                position: absolute;
+                left: 12px;
+                right: 12px;
+                bottom: -1px;
+                height: 2px;
+                background: linear-gradient(90deg, rgba(255,255,255,.0), var(--accent), rgba(255,255,255,.0));
+                opacity: .7;
+            }
+
+        .hs-theme .modal-olive .modal-title {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .hs-theme .modal-olive .btn-close {
+            filter: invert(1) opacity(.9);
+        }
+
+        .hs-theme .modal-olive .modal-body {
+            background: var(--panel);
+            color: var(--text);
+            padding: 1rem 1rem 1.25rem;
+        }
+
+        .hs-theme .modal-olive .modal-footer {
+            background: var(--panel);
+            border-top: 1px solid rgba(255,255,255,.08);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+        }
+
+            .hs-theme .modal-olive .modal-footer .btn {
+                background: var(--olive);
+                color: var(--text);
+                border: 1px solid rgba(255,255,255,.12);
+                border-radius: 10px;
+            }
+
+                .hs-theme .modal-olive .modal-footer .btn:hover {
+                    background: var(--olive-soft);
+                    border-color: rgba(255,255,255,.18);
+                }
+
+        .hs-theme .modal-xxl-custom {
+            max-width: 95vw !important;
+        }
+
+        .hs-theme #publicKeyVaultModal .modal-dialog {
+            height: 92vh;
+        }
+
+        .hs-theme #publicKeyVaultModal .modal-content {
+            height: 92vh;
+        }
+
+        .hs-theme #publicKeyVaultModal .modal-body {
+            overflow: auto;
+            max-height: calc(92vh - 120px);
+        }
+
+@media (min-width: 1400px) {
+    .hs-theme .modal-olive .modal-dialog.modal-xl {
+        max-width: 1140px;
+    }
+}
+
+.hs-theme .modal-olive .modal-dialog {
+    filter: drop-shadow(0 12px 40px rgba(0,0,0,.45));
+}
+
+.hs-theme .modal-olive .table-responsive {
+    background: transparent;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+/* Fix clipping inside Bootstrap modal (DataTables dropdowns) */
+.hs-theme .modal-olive,
+.hs-theme .modal-olive .modal-dialog,
+.hs-theme .modal-olive .modal-content {
+    overflow: visible !important;
+}
+
+
+/* =====================================================
+   DATATABLES — Modern Olive Skin (v1 + v2)
+   ===================================================== */
+
+.hs-theme .dataTables_wrapper {
+    color: var(--text);
+}
+
+    .hs-theme .dataTables_wrapper .dataTables_length,
+    .hs-theme .dataTables_wrapper .dataTables_filter,
+    .hs-theme .dataTables_wrapper .dataTables_info {
+        color: var(--muted);
+    }
+
+        .hs-theme .dataTables_wrapper .dataTables_length select,
+        .hs-theme .dataTables_wrapper .dataTables_filter input {
+            color: var(--text);
+            background-color: #102217;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 10px;
+            padding: .35rem .5rem;
+            outline: none;
+        }
+
+            .hs-theme .dataTables_wrapper .dataTables_filter input::placeholder {
+                color: rgba(255,255,255,.5);
+            }
+
+.hs-theme table.dataTable {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+    .hs-theme table.dataTable thead th {
+        background: linear-gradient(180deg, var(--panel-2), var(--panel-3));
+        color: var(--text);
+        border-bottom: 1px solid rgba(255,255,255,.12);
+    }
+
+    .hs-theme table.dataTable tbody tr {
+        color: var(--text);
+        background-color: transparent;
+        border-color: rgba(255,255,255,.06);
+    }
+
+    .hs-theme table.dataTable.stripe tbody tr.odd,
+    .hs-theme table.dataTable.display tbody tr.odd {
+        background-color: rgba(255,255,255,.03);
+    }
+
+    .hs-theme table.dataTable.stripe tbody tr.even,
+    .hs-theme table.dataTable.display tbody tr.even {
+        background-color: rgba(255,255,255,.01);
+    }
+
+    .hs-theme table.dataTable.hover tbody tr:hover,
+    .hs-theme table.dataTable.display tbody tr:hover {
+        background-color: rgba(165,207,130,.08);
+    }
+
+    .hs-theme table.dataTable tbody tr.selected,
+    .hs-theme table.dataTable tbody tr.selected > * {
+        background: rgba(165,207,130,.18) !important;
+        color: var(--text);
+    }
+
+/* Pagination */
+.hs-theme .dataTables_wrapper .dataTables_paginate {
+    margin-top: .5rem;
+}
+
+    .hs-theme .dataTables_wrapper .dataTables_paginate .paginate_button {
+        color: var(--muted) !important;
+        border: 1px solid rgba(255,255,255,.10);
+        background: var(--olive);
+        border-radius: 10px;
+        padding: .25rem .6rem;
+        margin: 0 .15rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+
+        .hs-theme .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            color: var(--text) !important;
+            background: var(--olive-soft);
+            border-color: rgba(255,255,255,.18);
+        }
+
+        .hs-theme .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+        .hs-theme .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            color: #0a140d !important;
+            background: var(--accent);
+            border-color: var(--accent-2);
+        }
+
+/* Processing overlay */
+.hs-theme .dataTables_processing {
+    color: var(--text);
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    padding: .6rem .9rem;
+}
+
+@media (max-width: 576px) {
+    .hs-theme .dataTables_wrapper .dataTables_length,
+    .hs-theme .dataTables_wrapper .dataTables_filter,
+    .hs-theme .dataTables_wrapper .dataTables_info,
+    .hs-theme .dataTables_wrapper .dataTables_paginate {
+        text-align: left;
+    }
+
+    .hs-theme .dataTables_wrapper .dataTables_paginate {
+        margin-top: .4rem;
+    }
+}
+
+/* DataTables v2 container */
+.hs-theme .dt-container {
+    color: var(--text);
+}
+
+/* Show entries dropdown */
+.hs-theme .dt-length .dt-input {
+    color: var(--text);
+    background-color: #102217;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px;
+    padding: .35rem .6rem;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+    cursor: pointer;
+}
+
+    .hs-theme .dt-length .dt-input:hover,
+    .hs-theme .dt-length .dt-input:focus {
+        background-color: var(--olive-soft);
+        border-color: var(--accent);
+        box-shadow: 0 0 8px rgba(165,207,130,.3);
+        outline: none;
+    }
+
+    .hs-theme .dt-length .dt-input option {
+        background-color: var(--panel-2);
+        color: var(--text);
+    }
+
+.hs-theme .dt-search .dt-input {
+    color: var(--text);
+    background-color: #102217;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px;
+    padding: .35rem .6rem;
+}
+
+    .hs-theme .dt-search .dt-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 8px rgba(165,207,130,.25);
+        outline: none;
+    }
+
+.hs-theme .dt-search label {
+    color: var(--muted);
+    margin-right: .4rem;
+}
+
+.hs-theme div.dt-container select.dt-input {
+    margin-left: 11px;
+}
+
+/* Ensure dropdown list appears above modal boundaries */
+.hs-theme .dt-length {
+    position: relative;
+    z-index: 1105;
+}
+
+
+/* =====================================================
+   BUTTONS — Olive Outline (generic)
+   ===================================================== */
+
+.hs-theme .btn-olive-outline {
+    color: var(--text);
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 999px;
+    padding: .25rem .65rem;
+}
+
+    .hs-theme .btn-olive-outline:hover {
+        background: var(--olive-soft);
+        border-color: var(--accent);
+        box-shadow: 0 0 8px rgba(165,207,130,.25);
+    }
+
+    .hs-theme .btn-olive-outline.active {
+        color: #0a140d;
+        background: var(--accent);
+        border-color: var(--accent-2);
+    }
+
+.btn-olive-outline {
+    color: var(--text);
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 999px;
+    padding: .25rem .65rem;
+}
+
+    .btn-olive-outline:hover {
+        background: var(--olive-soft);
+        border-color: var(--accent);
+        box-shadow: 0 0 8px rgba(165,207,130,.25);
+    }
+
+    .btn-olive-outline.active {
+        color: #0a140d;
+        background: var(--accent);
+        border-color: var(--accent-2);
+    }
+
+/* Footer date/month badges */
+.hit-badge {
+    min-width: 30px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: .2px;
+    background: rgba(165,207,130,.12); /* olive glow */
+    border: 1px solid rgba(165,207,130,.25);
+    color: var(--text);
+    box-shadow: inset 0 0 10px rgba(0,0,0,.25);
+}
+
+
+/* Push toastr down from the top */
+#toast-container.toast-top-right {
+    top: 80px; /* adjust this value */
+}
+
+#toast-container.toast-top-left {
+    top: 80px; /* if you ever use top-left */
+}
+
+#toast-container.toast-top-center {
+    top: 80px;
+}

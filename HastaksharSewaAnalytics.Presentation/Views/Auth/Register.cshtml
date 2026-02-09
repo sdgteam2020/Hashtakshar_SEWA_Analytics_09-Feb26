@@ -1,0 +1,151 @@
+﻿@model HastaksharSewaAnalytics.Application.Dtos.User.RegisterVm
+@{
+    ViewData["Title"] = "Register";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
+}
+
+<div class="container-fluid">
+    <div class="register-container">
+
+        <div class="card register-card panel-glow">
+            <div class="text-center mb-3">
+                <div class="register-icon">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+
+                <h4 class="register-title mb-1">Create Account</h4>
+                <div class="text-muted register-subtitle">
+                    Hastakshar SEWA • Secure Analytics Access
+                </div>
+            </div>
+
+            <hr class="border-secondary opacity-25" />
+
+            <form asp-controller="Auth" asp-action="Register" method="post" novalidate>
+                @Html.AntiForgeryToken()
+
+                <!-- Show validation summary -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger py-2">
+                        Please correct the errors and try again.
+                        @Html.ValidationSummary(excludePropertyErrors: true, message: "")
+                    </div>
+                }
+
+                <!-- Username -->
+                <div class="mb-3">
+                    <label class="form-label text-muted">Username</label>
+                    <input class="form-control register-pill"
+                           name="Username"
+                           value="@Model?.Username"
+                           placeholder="Enter username"
+                           autocomplete="username"
+                           pattern="[a-zA-Z0-9._-]+"
+                           title="Only letters, numbers, dot (.), underscore (_) and hyphen (-) are allowed"
+                           required />
+                    <div class="text-danger small mt-1">
+                        @Html.ValidationMessage("Username")
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label text-muted">Email</label>
+                    <input class="form-control register-pill"
+                           type="email"
+                           name="Email"
+                           value="@Model?.Email"
+                           placeholder="Enter email"
+                           autocomplete="email"
+                           required />
+                    <div class="text-danger small mt-1">
+                        @Html.ValidationMessage("Email")
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label class="form-label text-muted">Password</label>
+
+                    <div class="input-group register-pill-group">
+                        <input class="form-control"
+                               type="password"
+                               id="regPassword"
+                               name="Password"
+                               placeholder="Create password"
+                               autocomplete="new-password"
+                               required />
+
+                        <button class="btn btn-olive-outline"
+                                type="button"
+                                id="toggleRegPwd">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="text-danger small mt-1">
+                        @Html.ValidationMessage("Password")
+                    </div>
+
+                    <div class="text-muted small mt-2">
+                        Use at least 8 characters with a number and an uppercase letter.
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-3">
+                    <label class="form-label text-muted">Confirm Password</label>
+
+                    <div class="input-group register-pill-group">
+                        <input class="form-control"
+                               type="password"
+                               id="regConfirmPassword"
+                               name="ConfirmPassword"
+                               placeholder="Confirm password"
+                               autocomplete="new-password"
+                               required />
+
+                        <button class="btn btn-olive-outline"
+                                type="button"
+                                id="toggleRegConfirmPwd">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="text-danger small mt-1">
+                        @Html.ValidationMessage("ConfirmPassword")
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid mt-3">
+                    <button type="submit" class="btn btn-olive-outline py-2">
+                        <i class="bi bi-person-check me-1"></i>
+                        Create Account
+                    </button>
+                </div>
+
+                <!-- Back to login -->
+                <div class="text-center mt-3">
+                    <a asp-controller="Auth" asp-action="Login" class="small">
+                        Already have an account? Sign in
+                    </a>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="text-center text-muted small mt-3">
+            Authorized users only. All activities are logged.
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/register.js" asp-append-version="true"></script>
+}

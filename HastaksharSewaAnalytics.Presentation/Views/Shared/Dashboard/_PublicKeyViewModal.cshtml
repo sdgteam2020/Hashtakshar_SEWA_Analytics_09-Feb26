@@ -1,0 +1,22 @@
+﻿<div class="modal fade modal-olive" id="publicKeyViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Public Key</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="small text-muted mb-1">Key (Base64 / XML)</div>
+                <textarea id="pkv_keyText"
+                          class="form-control form-control-sm bg-dark text-white border-secondary"
+                          rows="10" readonly></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="btnCopyPublicKey" class="btn btn-sm btn-outline-light">Copy</button>
+                <button class="btn btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

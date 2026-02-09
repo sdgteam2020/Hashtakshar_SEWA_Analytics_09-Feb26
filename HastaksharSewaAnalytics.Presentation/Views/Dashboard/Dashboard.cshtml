@@ -1,0 +1,89 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+}
+
+<!-- KPI Row -->
+<div class="row g-3 row-cols-1 row-cols-md-2 row-cols-lg-5">
+
+    <div class="col">
+        <div id="kpiTotalApps" class="card kpi p-3 h-100 kpi-glow cursor-pointer">
+            <div class="d-flex align-items-center">
+                <div class="icon-pill me-3"><i class="bi bi-collection-fill"></i></div>
+                <div>
+                    <div class="kpi-title">Total Users</div>
+                    <div class="kpi-value" data-count="applications">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div id="kpiTodayUsers" class="card kpi p-3 h-100 kpi-glow cursor-pointer">
+            <div class="d-flex align-items-center">
+                <div class="icon-pill me-3"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="kpi-title">Today Users</div>
+                    <div class="kpi-value" data-count="users">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div id="kpiVault" class="card kpi p-3 h-100 kpi-glow cursor-pointer">
+            <div class="d-flex align-items-center">
+                <div class="icon-pill me-3"><i class="bi bi-key-fill"></i></div>
+                <div>
+                    <div class="kpi-title">e-Vault</div>
+                    <div class="kpi-value" data-count="vaultmaster">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div id="kpiDigitalSignDetails" class="card kpi p-3 h-100 kpi-glow cursor-pointer">
+            <div class="d-flex align-items-center">
+                <div class="icon-pill me-3"><i class="bi bi-pen-fill"></i></div>
+                <div>
+                    <div class="kpi-title">Digital Sign Details</div>
+                    <div class="kpi-value" data-count="signed">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div id="kpiClientErrorLogs" class="card kpi p-3 h-100 kpi-glow cursor-pointer">
+            <div class="d-flex align-items-center">
+                <div class="icon-pill me-3"><i class="bi bi-water"></i></div>
+                <div>
+                    <div class="kpi-title">Error Logs</div>
+                    <div class="kpi-value" data-count="logsmonitor">0</div>
+                </div>
+            </div>
+        </div>
+    </div>       
+
+</div>
+
+
+<!-- Graphs + Charts -->
+
+
+<!-- Modals -->
+@await Html.PartialAsync("~/Views/Shared/Dashboard/_totalapplicationmodal.cshtml")
+@await Html.PartialAsync("~/Views/Shared/Dashboard/_todayusersdetailsmodal.cshtml")
+@await Html.PartialAsync("~/Views/Shared/Dashboard/_logsdetailsmodal.cshtml")
+@await Html.PartialAsync("~/Views/Shared/Dashboard/_clienterrorlogdetailmodal.cshtml")
+@await Html.PartialAsync("~/Views/Shared/Dashboard/_vaultmasterdetailsmodal.cshtml")
+@await Html.PartialAsync("~/Views/Shared/Dashboard/_publickeyviewmodal.cshtml")
+@await Html.PartialAsync("~/Views/Shared/Dashboard/_digitalsigndetailsmodal.cshtml")
+
+@section Scripts {
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+}

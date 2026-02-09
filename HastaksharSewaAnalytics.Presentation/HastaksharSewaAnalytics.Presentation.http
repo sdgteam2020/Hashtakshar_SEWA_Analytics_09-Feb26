@@ -1,0 +1,52 @@
+﻿@HastaksharSewaAnalytics.Presentation_HostAddress = https://localhost:7018
+
+
+POST {{HastaksharSewaAnalytics.Presentation_HostAddress}}/ClientLogs/SaveClientLogs
+Content-Type: application/json
+
+{
+  "ipAddress": "192.168.10.25",
+  "machineName": "CLIENT-PC-07",
+  "userName": "akira.s",
+  "operatingSystem": "Windows 11 Pro 23H2",
+  "is64Bit": true,
+  "systemDirectory": "C:\\Windows\\System32",
+  "appName": "HastaksharSewaClient",
+  "appVersion": "1.2.4",
+  "errorMessage": "Object reference not set to an instance of an object.",
+  "stackTrace": "at HastaksharSewa.Client.Services.SyncService.Run() in SyncService.cs:line 84",
+  "extra": "Occurred while syncing user profile data"
+}
+
+
+###
+
+GET {{HastaksharSewaAnalytics.Presentation_HostAddress}}/dashboard/getclienterrorlogsdata/{id}
+
+###
+
+POST {{HastaksharSewaAnalytics.Presentation_HostAddress}}/api/transaction/CountUser
+Content-Type: application/json
+
+{
+  //SaveInstallationRquest
+}
+
+###
+
+POST {{HastaksharSewaAnalytics.Presentation_HostAddress}}/api/transaction/SaveDGISAppDailyRunData
+Content-Type: application/json
+
+{
+  //LogDailyRunRequest
+}
+
+###
+
+GET {{HastaksharSewaAnalytics.Presentation_HostAddress}}/dashboard/getpublickeycount/{id}
+
+###
+
+GET {{HastaksharSewaAnalytics.Presentation_HostAddress}}/dashboard/getpublickeyvaltdata/{id}
+
+###
