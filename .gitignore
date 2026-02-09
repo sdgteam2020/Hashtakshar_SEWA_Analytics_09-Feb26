@@ -10,3 +10,6 @@
 /HastaksharSewaAnalytics.Infrastructure/obj
 /HastaksharSewaAnalytics.Presentation/bin
 /HastaksharSewaAnalytics.Presentation/obj
+
+# Visual Studio cache
+.vs/
