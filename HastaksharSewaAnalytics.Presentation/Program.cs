@@ -6,6 +6,7 @@ using HastaksharSewaAnalytics.Infrastructure.Persistence;
 using HastaksharSewaAnalytics.Infrastructure.Repository.Common;
 using HastaksharSewaAnalytics.Infrastructure.Security;
 using HastaksharSewaAnalytics.Infrastructure.Services;
+using HastaksharSewaAnalytics.Presentation.Logging;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -160,7 +161,8 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
-
+// 👇 Env here
+ErrorLog.Env = builder.Environment;
 var app = builder.Build();
 
 // ================== Pipeline ==================
@@ -194,6 +196,9 @@ app.UseAuthorization();
 //    }
 //    await next();
 //});
+
+//Console.WriteLine("ContentRootPath: " + ErrorLog.Env.ContentRootPath);
+//Console.WriteLine("BaseDirectory: " + AppContext.BaseDirectory);
 
 app.MapControllerRoute(
     name: "default",
