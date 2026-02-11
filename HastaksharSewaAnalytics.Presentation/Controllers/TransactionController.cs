@@ -1,5 +1,6 @@
 ﻿using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
 using HastaksharSewaAnalytics.Application.Dtos.Transaction;
+using HastaksharSewaAnalytics.Presentation.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,51 +21,87 @@ public class TransactionController : Controller
     [Route("api/transaction/SaveUserData")]
     public async Task<IActionResult> SaveVaultMasterData(SaveUserPublicDataRequest obj)
     {
-        var result = await _transactionRepository.SaveVaultMasterData(obj);
-        if (result == true)
+        try
         {
-            return Ok(result);
+            var result = await _transactionRepository.SaveVaultMasterData(obj);
+            if (result == true)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
-        return BadRequest(result);
+        catch (Exception ex)
+        {
+            // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+            Console.WriteLine($"Error in SaveVaultMasterData: {ex.Message}");
+            ErrorLog.LogErrorToFile(ex, $"Error in SaveVaultMasterData for SerialNo: {obj.SerialNo}");
+            return BadRequest(false);
+        }
     }
 
     [Authorize(Policy = "DeviceOnly")]
     [HttpPost("api/transaction/SaveInstallationAsync")]
     public async Task<IActionResult> SaveInstallationAsync(SaveInstallationRquest obj)
     {
-        var result = await _transactionRepository.SaveInstallationAsync(obj);
-        if (result == true)
+        try
         {
-            return Ok(result);
+            var result = await _transactionRepository.SaveInstallationAsync(obj);
+            if (result == true)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
-        return BadRequest(result);
+        catch (Exception ex)
+        {
+            // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+            Console.WriteLine($"Error in SaveInstallationAsync: {ex.Message}");
+            ErrorLog.LogErrorToFile(ex, $"Error in SaveInstallationAsync for DomainId: {obj.domainId}");
+            return BadRequest(false);
+        }
     }
 
     [Authorize(Policy = "DeviceOnly")]
     [HttpPost("api/transaction/SaveDailyRunAsync")]
     public async Task<IActionResult> SaveDailyRunAsync(SaveDailyRunRequest obj)
     {
-        var result = await _transactionRepository.SaveDailyRunAsync(obj);
-        if (result == true)
+        try
         {
-            return Ok(result);
+            var result = await _transactionRepository.SaveDailyRunAsync(obj);
+            if (result == true)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
-        return BadRequest(result);
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in SaveDailyRunAsync: {ex.Message}");
+            ErrorLog.LogErrorToFile(ex, $"Error in SaveDailyRunAsync for DomainId: {obj.domainId}");
+            return BadRequest(false);
+        }
     }
-
     [Authorize(Policy = "DeviceOnly")]
     [HttpPost("api/transaction/search")]
     public async Task<IActionResult> Search([FromBody] VaultSearchRequest req, CancellationToken ct)
     {
-        // your WPF is sending ArmyNo = query
-        var term = (req?.ArmyNo ?? req?.Term ?? req?.Name ?? "").Trim();
+        try
+        {
+            // your WPF is sending ArmyNo = query
+            var term = (req?.ArmyNo ?? req?.Term ?? req?.Name ?? "").Trim();
 
-        if (term.Length < 2)
-            return Ok(new List<XmlDataForPublicKeyResponse>());
+            if (term.Length < 2)
+                return Ok(new List<XmlDataForPublicKeyResponse>());
 
-        var data = await _transactionRepository.SearchVaultMastersBySerialAsync(term, ct);
-        return Ok(data);
+            var data = await _transactionRepository.SearchVaultMastersBySerialAsync(term, ct);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in Search: {ex.Message}");
+            ErrorLog.LogErrorToFile(ex, $"Error in Search for Term: {req?.ArmyNo ?? req?.Term ?? req?.Name}");
+            return BadRequest(new List<XmlDataForPublicKeyResponse>());
+        }
     }
-
 
 }

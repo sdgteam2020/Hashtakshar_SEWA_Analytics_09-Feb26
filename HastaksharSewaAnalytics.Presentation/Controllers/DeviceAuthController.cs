@@ -21,8 +21,16 @@ public sealed class DeviceAuthController : ControllerBase
     [HttpPost("token"), AllowAnonymous]
     public async Task<IActionResult> Token([FromBody] DeviceRequest request, CancellationToken ct)
     {
-        var token = await _deviceService.AuthenticateDeviceAsync(request, ct);
-        if (token == null) return Unauthorized(new { message = "Invalid device credentials." });
-        return Ok(token);
+        try
+        {
+            var token = await _deviceService.AuthenticateDeviceAsync(request, ct);
+            if (token == null) return Unauthorized(new { message = "Invalid device credentials." });
+            return Ok(token);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception (not implemented here)
+            return StatusCode(500, new { message = "An error occurred while processing the request.", details = ex.Message });
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
+using HastaksharSewaAnalytics.Presentation.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,12 +22,20 @@ public sealed class DashboardController : Controller
     [Authorize]
     public async Task<IActionResult> TotalInstallCount()
     {
-        // Query PostgreSQL table
-        var totalCount = await _dashboardRepository.GetTotalInstallationsAsync();
+        dynamic totalCount = 0;
+        try
+        {
+            // Query PostgreSQL table
+            totalCount = await _dashboardRepository.GetTotalInstallationsAsync();
 
-        // Option 1: return as JSON (for AJAX)
+            // Option 1: return as JSON (for AJAX)
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching total installation count.");
+        }
         return Json(new { totalInstallations = totalCount });
-        
+
     }
 
     // GET: /Dashboard/TodayUsers
@@ -39,7 +48,10 @@ public sealed class DashboardController : Controller
         {
             count = await _dashboardRepository.GetTodayUserCount();
         }
-        catch (Exception) { }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching today's user count.");
+        }
 
         return Json(new { todayUsers = count });
     }
@@ -47,40 +59,85 @@ public sealed class DashboardController : Controller
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> GetApplications()
-    {        
-        var data = await _dashboardRepository.GetHastaksharSewaInstallationsQuery();
-        return Json(data);
+    {
+        try
+        {
+            var data = await _dashboardRepository.GetHastaksharSewaInstallationsQuery();
+            return Json(data);
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching applications.");
+        }
+        return Json(new { });
     }
 
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> GetTodayUsers()
     {
-        var data = await _dashboardRepository.GetHastaksharSewaDailyRunQuery();
-        return Json(data);
+        try
+        {
+            //int a = 0;
+            //int b = 1;
+            //int c = b / a;
+            var data = await _dashboardRepository.GetHastaksharSewaDailyRunQuery();
+            return Json(data);
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching today's users.");
+        }
+        return Json(new { });
     }
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> GetClientErrorLogsCount()
     {
-        var count = await _dashboardRepository.GetClientErrorLogsCounts();
+        dynamic count = 0;
+        try
+        {
+            count = await _dashboardRepository.GetClientErrorLogsCounts();
+            return Json(new { clientErrorLogsCount = count });
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching client error logs count.");
+        }
         return Json(new { clientErrorLogsCount = count });
     }
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> GetClientErrorLogsData([FromHeader(Name = "X-Requested-With")] string xrw)
     {
-        if (xrw != "XMLHttpRequest")
-            return Forbid();
-        var data = await _dashboardRepository.GetClientErrorLogsData();
-        return Json(data);
+        try
+        {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
+            var data = await _dashboardRepository.GetClientErrorLogsData();
+            return Json(data);
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching client error logs data.");
+        }
+        return Json(new { });
     }
 
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> GetVaultDataCount()
     {
-        var count = await _dashboardRepository.GetVaultDataCount();
+        dynamic count = 0;
+        try
+        {
+            count = await _dashboardRepository.GetVaultDataCount();
+            return Json(new { vaultDataCount = count });
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching vault data count.");
+        }
         return Json(new { vaultDataCount = count });
     }
 
@@ -88,21 +145,46 @@ public sealed class DashboardController : Controller
     [Authorize]
     public async Task<IActionResult> GetVaultMasterData()
     {
-        var data = await _dashboardRepository.GetVaultMasterData();
-        return Json(data);
+        try
+        {
+            var data = await _dashboardRepository.GetVaultMasterData();
+            return Json(data);
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching vault master data.");
+        }
+        return Json(new { });
     }
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> GetDigitalSignCount()
     {
-        var count = await _digitalSignService.GetDigitalSignCountAsync();
-        return Json(new { digitalSignCount = count });
+        dynamic count = 0;
+        try
+        {
+            count = await _digitalSignService.GetDigitalSignCountAsync();
+            return Json(new { digitalSignCount = count });
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching digital sign count.");
+            return Json(new { digitalSignCount = count });
+        }
     }
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> GetDigitalSignList()
     {
-        var data = await _digitalSignService.GetDigitalSignListAsync();
-        return Json(data);
+        try
+        {
+            var data = await _digitalSignService.GetDigitalSignListAsync();
+            return Json(data);
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching digital sign list.");
+        }
+        return Json(new { });
     }
 }

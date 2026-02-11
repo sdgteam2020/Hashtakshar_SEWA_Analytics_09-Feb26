@@ -1,5 +1,6 @@
 ﻿using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
 using HastaksharSewaAnalytics.Application.Dtos.ClientLogs;
+using HastaksharSewaAnalytics.Presentation.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,11 +25,19 @@ public class ClientLogsController : Controller
     [HttpPost("api/ClientLogs/SaveClientLogs")]
     public async Task<IActionResult> SaveClientLogs([FromBody]ClientErrorLogRequest clientErrorLogRequest, CancellationToken cancellationToken)
     {
-        var result = await _clientLogsRepository.SaveClientLogAsync(clientErrorLogRequest, cancellationToken);
-        if (result == true)
+        try
         {
-            return Ok(result);
+            var result = await _clientLogsRepository.SaveClientLogAsync(clientErrorLogRequest, cancellationToken);
+            if (result == true)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
-        return BadRequest(result);
+        catch (Exception ex)
+        {
+            ErrorLog.LogErrorToFile(ex, "An error occurred while saving client logs.");
+            return BadRequest(false);
+        }
     }
 }

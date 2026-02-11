@@ -2,6 +2,7 @@
 using HastaksharSewaAnalytics.Application.Dtos.User;
 using HastaksharSewaAnalytics.Infrastructure.Identity;
 using HastaksharSewaAnalytics.Presentation.Helpers;
+using HastaksharSewaAnalytics.Presentation.Logging;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -141,6 +142,7 @@ public sealed class AuthController : Controller
         catch (CryptographicException ex)
         {
             _logger.LogError(ex, "Crypto error during login.");
+            ErrorLog.LogErrorToFile(ex, "Crypto error in AuthController.Login");
             var msg = "Security error occurred. Please refresh the page and try again.";
             if (isAjax) return StatusCode(500, new { message = msg });
             TempData["ToastError"] = msg;
@@ -149,6 +151,7 @@ public sealed class AuthController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error during login.");
+            ErrorLog.LogErrorToFile(ex, "Unexpected error in AuthController.Login");
             var msg = "Unexpected server error. Please try again later.";
             if (isAjax) return StatusCode(500, new { message = msg });
             TempData["ToastError"] = msg;
@@ -162,22 +165,42 @@ public sealed class AuthController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user != null)
-            await _userManager.UpdateSecurityStampAsync(user);
+        try
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+                await _userManager.UpdateSecurityStampAsync(user);
 
-        // 🔐 Hard sign-out (server + cookie scheme)
-        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+            // 🔐 Hard sign-out (server + cookie scheme)
+            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
 
-        await _signInManager.SignOutAsync(); // keeps Identity state clean
+            await _signInManager.SignOutAsync(); // keeps Identity state clean
 
-        HttpContext.Session.Clear();
+            HttpContext.Session.Clear();
 
-        Response.Cookies.Delete(".AspNetCore.Identity.Application");
-        Response.Cookies.Delete(".AspNetCore.Session");
+            Response.Cookies.Delete(".AspNetCore.Identity.Application");
+            Response.Cookies.Delete(".AspNetCore.Session");
 
-        TempData["ToastInfo"] = "Logged out successfully.";
-        return RedirectToAction("Login", "Auth");
+            TempData["ToastInfo"] = "Logged out successfully.";
+            return RedirectToAction("Login", "Auth");
+        }
+        catch (Exception ex)
+        {
+            // log the real error
+            ErrorLog.LogErrorToFile(ex, "Unexpected error in AuthController.Logout");
+
+            // try best-effort cleanup even if something failed above
+            try
+            {
+                HttpContext.Session.Clear();
+                Response.Cookies.Delete(".AspNetCore.Identity.Application");
+                Response.Cookies.Delete(".AspNetCore.Session");
+            }
+            catch { /* ignore */ }
+
+            TempData["ToastError"] = "Logout failed due to a server error. Please try again.";
+            return RedirectToAction("Login", "Auth");
+        }
     }
 
 
@@ -222,6 +245,7 @@ public sealed class AuthController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error during registration.");
+            ErrorLog.LogErrorToFile(ex, "Unexpected error in AuthController.Register");
             TempData["ToastError"] = "Registration failed due to server error. Please try again later.";
             return View(model);
         }

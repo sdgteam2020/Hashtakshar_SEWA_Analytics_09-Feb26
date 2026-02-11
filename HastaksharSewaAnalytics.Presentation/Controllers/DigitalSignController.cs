@@ -1,5 +1,6 @@
 ﻿using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
 using HastaksharSewaAnalytics.Application.Dtos.DigitalSign;
+using HastaksharSewaAnalytics.Presentation.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,11 +23,20 @@ public class DigitalSignController : Controller
     [HttpPost("SaveDigitalSign")]
     public async Task<IActionResult> SaveDigitalSign([FromBody] SaveDigitalSignRequest saveDigitalSignRequest, CancellationToken cancellationToken)
     {
-        var result = await _digitalSignService.SaveDigitalSign(saveDigitalSignRequest, cancellationToken);
-        if (result == true)
+        try
         {
-            return Ok(result);
+            var result = await _digitalSignService.SaveDigitalSign(saveDigitalSignRequest, cancellationToken);
+            if (result == true)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
-        return BadRequest(result);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while saving digital sign.");
+            ErrorLog.LogErrorToFile(ex, "An error occurred while saving digital sign.");
+            return BadRequest(false);
+        }
     }
 }
