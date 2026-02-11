@@ -17,7 +17,6 @@ public sealed class DashboardController : Controller
     }
     public IActionResult Dashboard() => View();
 
-    //GET: /Dashboard/TotalInstallCount
     [HttpGet("/Dashboard/TotalInstallCount")]
     [Authorize]
     public async Task<IActionResult> TotalInstallCount()
@@ -25,10 +24,7 @@ public sealed class DashboardController : Controller
         dynamic totalCount = 0;
         try
         {
-            // Query PostgreSQL table
             totalCount = await _dashboardRepository.GetTotalInstallationsAsync();
-
-            // Option 1: return as JSON (for AJAX)
         }
         catch (Exception ex)
         {
@@ -38,7 +34,6 @@ public sealed class DashboardController : Controller
 
     }
 
-    // GET: /Dashboard/TodayUsers
     [HttpGet("/Dashboard/TodayUserCount")]
     [Authorize]
     public async Task<IActionResult> TodayUserCount()
@@ -78,9 +73,6 @@ public sealed class DashboardController : Controller
     {
         try
         {
-            //int a = 0;
-            //int b = 1;
-            //int c = b / a;
             var data = await _dashboardRepository.GetHastaksharSewaDailyRunQuery();
             return Json(data);
         }

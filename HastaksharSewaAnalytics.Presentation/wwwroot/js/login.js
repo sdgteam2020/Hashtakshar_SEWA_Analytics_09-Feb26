@@ -29,8 +29,8 @@ document.getElementById("loginForm").addEventListener("submit", async function (
     const formData = new FormData(form);
 
     // Overwrite fields with encrypted values
-    formData.set("username", encryptedUsername);
-    formData.set("password", encryptedPassword);
+    formData.set("Username", encryptedUsername);
+    formData.set("Password", encryptedPassword);
 
     // Read anti-forgery token value
     const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;

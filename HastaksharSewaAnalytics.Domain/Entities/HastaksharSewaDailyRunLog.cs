@@ -124,19 +124,4 @@ public sealed class HastaksharSewaDailyRunLog : AuditableEntity<Guid>
 
         IPAddress = ipAddress;
     }
-
-    // Decide your rule: store full timestamp OR store date-only.
-    // Here: normalize to UTC and keep full timestamp.
-    //private static DateTimeOffset NormalizeRunDate(DateTime runOnDate)
-    //{
-    //    if (runOnDate == default)
-    //        throw new ArgumentException("RunOnDate is required.", nameof(runOnDate));
-
-    //    return runOnDate.Kind switch
-    //    {
-    //        DateTimeKind.Utc => runOnDate,
-    //        DateTimeKind.Local => runOnDate.ToUniversalTime(),
-    //        _ => DateTime.SpecifyKind(runOnDate, DateTimeKind.Utc)
-    //    };
-    //}
 }
