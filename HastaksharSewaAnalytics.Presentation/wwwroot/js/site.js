@@ -1,8 +1,4 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Set today's date in header (auto)
-(function () {
+﻿(function () {
     const el = document.getElementById("today");
     if (!el) return;
     const d = new Date();
@@ -16,71 +12,156 @@ toastr.options = {
     timeOut: 3000
 };
 
-const myHeadersIncrement = new Headers();
-myHeadersIncrement.append("X-API-KEY", '26a7d85c-29c0-48c3-bffc-5fa701d09865');
+(function () {
+    let shown = false;
 
-const requestIncrement = {
-    method: "POST",
-    redirect: "follow",
-    headers: myHeadersIncrement
-};
+    window.handleSessionExpired = function (msg) {
+        if (shown) return;
+        shown = true;
+         
+        try { $.fn.dataTable.ext.errMode = 'none'; } catch { }
+         
+        try {
+            $.fn.dataTable.tables({ visible: true, api: true }).clear().draw();
+        } catch { }
+         
+        document.querySelectorAll('.modal.show').forEach(m => {
+            try { bootstrap.Modal.getInstance(m)?.hide(); } catch { }
+        });
+         
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+         
+        const modalEl = document.getElementById('sessionExpiredModal');
+        if (modalEl) {
+            const m = bootstrap.Modal.getOrCreateInstance(modalEl, { backdrop: 'static', keyboard: false });
+            m.show();
 
-fetch("https://hitcounter.army.mil/api/ApplicationHit/IncrementHits", requestIncrement)
-    .then((response) => response.text())
-    .then((result) => console.log(result))
-    .catch((error) => console.error(error));
+            const btn = document.getElementById('btnGoLogin');
+            if (btn) {
+                btn.onclick = function () {
+                    window.location.href = '/Auth/Login?reason=expired';
+                };
+            }
+            return;
+        }
+         
+        alert(msg || 'Session expired. Please login again.');
+        window.location.href = '/Auth/Login?reason=expired';
+    };
+})();
 
-const myHeadersIncrementStart = new Headers();
-myHeadersIncrementStart.append("X-API-KEY", '26a7d85c-29c0-48c3-bffc-5fa701d09865');
-const requestStart = {
-    method: "POST",
-    redirect: "follow",
-    headers: myHeadersIncrementStart
-};
 
-fetch("https://hitcounter.army.mil/api/Application/ApplicationSessionStart", requestStart)
-    .then((response) => response.text())
-    .then((result) => console.log(result))
-    .catch((error) => console.error(error));
+(function () {
+    const _fetch = window.fetch;
 
-const myHeaderstall = new Headers();
-myHeaderstall.append("X-API-KEY", '26a7d85c-29c0-48c3-bffc-5fa701d09865');
-const requestall = {
-    method: "POST",
-    redirect: "follow",
-    headers: myHeaderstall
-};
+    window.fetch = async function (input, init = {}) {
+        init.headers = init.headers || {};
+         
+        if (!init.headers['X-Requested-With']) init.headers['X-Requested-With'] = 'XMLHttpRequest';
 
-fetch("https://hitcounter.army.mil/api/ApplicationHit/HitswithConcurrentuser", requestall)
-    .then((response) => response.json())
-    .then((data) => {
-        console.log("todayHits:", data.TodayHits);
-        console.log("monthlyHits:", data.MonthlyHits);
-        console.log("totalHits:", data.TotalHits);
-        console.log("concurrentuser:", data.Concurrentuser);
+        // If you use antiforgery for POST via fetch, add token header here (optional)
+        // init.headers['RequestVerificationToken'] = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
 
-        // Footer binding
-        const set = (id, val) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = val ?? 0;
-        };
+        const res = await _fetch(input, init);
 
-        set("hitToday", data.TodayHits);
-        set("hitMonth", data.MonthlyHits);
-        set("hitTotal", data.TotalHits);
-        set("hitConcurrent", data.Concurrentuser);
-    })
-    .catch((error) => console.error(error));
+        if (res.status === 401) { 
+            let msg = 'Session expired. Please login again.';
+            try {
+                const ct = res.headers.get('content-type') || '';
+                if (ct.includes('application/json')) {
+                    const j = await res.clone().json();
+                    if (j?.message) msg = j.message;
+                }
+            } catch { }
+            window.handleSessionExpired(msg);
+            throw new Error('Unauthorized (401)');
+        }
+         
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('text/html')) { 
+              window.handleSessionExpired('Session expired. Please login again.');
+        }
 
-// Dynamic Day and Month badges
-(function setBadges() {
-    const d = new Date();
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        return res;
+    };
+})();
+ 
+try {
+    if ($.fn && $.fn.dataTable) {
+        $.fn.dataTable.ext.errMode = 'none';
 
-    const dayEl = document.getElementById("badgeDay");
-    const monthEl = document.getElementById("badgeMonth");
+        $(document).on('xhr.dt', function (e, settings, json, xhr) {
+            if (xhr && xhr.status === 401) {
+                window.handleSessionExpired(json?.message || 'Session expired. Please login again.');
+            }
+        });
+    }
+} catch { }
 
-    if (dayEl) dayEl.textContent = days[d.getDay()]; 
-    if (monthEl) monthEl.textContent = months[d.getMonth()];
+ 
+$(document).on('xhr.dt', function (e, settings, json, xhr) {
+    if (xhr && xhr.status === 401) {
+        window.handleSessionExpired(json?.message || 'Session expired. Please login again.');
+    }
+});
+
+$(document).on('error.dt', function (e, settings, techNote, message) {
+     
+});
+
+$.ajaxSetup({
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    statusCode: {
+        401: function (xhr) {
+            let msg = 'Session expired. Please login again.';
+            try {
+                const j = xhr.responseJSON;
+                if (j?.message) msg = j.message;
+            } catch { }
+            window.handleSessionExpired(msg);
+        }
+    }
+});
+
+async function ensureAuthOrShowExpired() {
+    try {
+        const res = await fetch('/Auth/PingAuth', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        return res.status !== 401;
+    } catch { 
+        return false;
+    }
+}
+
+
+(function () {
+    const KPI_SELECTORS = [
+        '#kpiTotalApps',
+        '#kpiTodayUsers',
+        '#kpiClientErrorLogs',
+        '#kpiVault',
+        '#kpiDigitalSignDetails'
+    ].join(',');
+
+    document.addEventListener('click', async function (e) {
+        const kpi = e.target.closest(KPI_SELECTORS);
+        if (!kpi) return;
+         
+        if (kpi.dataset.allowOpen === '1') return;
+         
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        const ok = await ensureAuthOrShowExpired();
+        if (!ok) return;  
+         
+        kpi.dataset.allowOpen = '1';
+        kpi.click();
+        kpi.dataset.allowOpen = '0';
+    }, true); 
 })();

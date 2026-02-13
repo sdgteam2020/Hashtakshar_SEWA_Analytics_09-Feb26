@@ -25,8 +25,7 @@
 
             <form id="loginForm" asp-controller="Auth" asp-action="Login" method="post">
                 @Html.AntiForgeryToken()
-
-                <!-- Username -->
+                 
                 <div class="mb-3">
                     <span id="spnhdns" class="d-none">@ViewBag.hdns</span>
                     <label class="form-label text-muted">Username / Email</label>
@@ -40,8 +39,7 @@
                            autocomplete="off"
                            required />
                 </div>
-
-                <!-- Password -->
+                 
                 <div class="mb-3">
                     <label class="form-label text-muted">Password</label>
                     <div class="input-group">
@@ -60,25 +58,14 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- Forgot -->
-                <div class="d-flex justify-content-end align-items-center mb-3">
-                    <a asp-controller="Auth"
-                       asp-action="ForgotPassword"
-                       class="small">
-                        Forgot password?
-                    </a>
-                </div>
-
-                <!-- Submit -->
+                 
                 <div class="d-grid">
                     <button type="submit" class="btn btn-olive-outline py-2">
                         <i class="bi bi-box-arrow-in-right me-1"></i>
                         Login
                     </button>
                 </div>
-
-                <!-- Register link -->
+                 
                 <div class="text-center mt-3">
                     <a asp-controller="Auth" asp-action="Register" class="small">
                         Register a new user

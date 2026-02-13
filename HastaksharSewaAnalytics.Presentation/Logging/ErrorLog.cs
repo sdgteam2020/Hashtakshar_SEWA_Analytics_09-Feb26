@@ -6,7 +6,6 @@ public static class ErrorLog
 {
     private static readonly object _lock = new object();
 
-    // Call this from Program.cs once
     public static IWebHostEnvironment? Env { get; set; }
 
     public static void LogErrorToFile(Exception ex, string extra = null!)
@@ -16,7 +15,7 @@ public static class ErrorLog
             var basePath = Env?.ContentRootPath
                            ?? AppContext.BaseDirectory;
 
-            var logDir = Path.Combine(basePath, "Logs", "Errors");
+            var logDir = Path.Combine(basePath, "App_Data", "Logs", "Errors");
             Directory.CreateDirectory(logDir);
 
             var filePath = Path.Combine(
@@ -39,8 +38,7 @@ public static class ErrorLog
             }
         }
         catch
-        {
-            // never throw from logger
+        { 
         }
     }
 

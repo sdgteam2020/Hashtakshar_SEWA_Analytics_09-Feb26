@@ -1,6 +1,6 @@
 ﻿using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.ISecurity;
 using HastaksharSewaAnalytics.Application.Dtos.User;
-using HastaksharSewaAnalytics.Infrastructure.Identity;
+using HastaksharSewaAnalytics.Domain.Identity;
 using HastaksharSewaAnalytics.Presentation.Helpers;
 using HastaksharSewaAnalytics.Presentation.Logging;
 using HastaksharSewaAnalytics.Presentation.Models;
@@ -22,6 +22,8 @@ public sealed class AuthController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly ILogger<AuthController> _logger;
+    public const string ActiveSessionClaim = "active_session_id";
+
 
     public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IJwtTokenService jwtTokenService, ILogger<AuthController> logger)
     {
@@ -38,7 +40,7 @@ public sealed class AuthController : Controller
         ViewData["ReturnUrl"] = returnUrl;
         string dd = AESEncrytDecry.GetSalt();
         HttpContext.Session.SetString(SessionKeySalt, dd);
-        ViewBag.hdns= dd;
+        ViewBag.hdns = dd;
         return View();
     }
 
@@ -51,7 +53,7 @@ public sealed class AuthController : Controller
                       || (Request.Headers["Accept"].ToString()?.Contains("application/json") ?? false);
 
         try
-        { 
+        {
             if (Request.Query.ContainsKey("username") || Request.Query.ContainsKey("password") ||
                 Request.Query.ContainsKey("Username") || Request.Query.ContainsKey("Password"))
             {
@@ -104,6 +106,19 @@ public sealed class AuthController : Controller
                 return View();
             }
 
+               
+            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+
+            await _signInManager.SignOutAsync();
+
+            HttpContext.Session.Clear();
+
+            Response.Cookies.Delete(".AspNetCore.Identity.Application");
+            Response.Cookies.Delete(".AspNetCore.Session");
+
+
+            await _userManager.UpdateSecurityStampAsync(user);
+
             var result = await _signInManager.PasswordSignInAsync(
                 user,
                 password,
@@ -113,14 +128,26 @@ public sealed class AuthController : Controller
 
             if (result.Succeeded)
             {
+                var newSessionId = Guid.NewGuid().ToString("N");
+                user.ActiveSessionId = newSessionId;
+                user.ActiveSessionIssuedUtc = DateTime.UtcNow;
+                await _userManager.UpdateAsync(user);
+              
+                await _signInManager.SignOutAsync();
+                await _signInManager.SignInWithClaimsAsync(
+                    user,
+                    isPersistent: false,
+                    additionalClaims: new[] { new Claim(ActiveSessionClaim, newSessionId) }
+                );
+
                 var claims = new List<Claim>
-            {
-                new(JwtRegisteredClaimNames.Sub, user.Id),
-                new(JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
-                new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-                new("token_type", "user"),
-                new("scope", "analytics.read analytics.write")
-            };
+                            {
+                                new(JwtRegisteredClaimNames.Sub, user.Id),
+                                new(JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
+                                new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+                                new("token_type", "user"),
+                                new("scope", "analytics.read analytics.write")
+                            };
 
                 var expiresUtc = DateTime.UtcNow.AddMinutes(_jwtTokenService.AccessTokenMinutes);
                 var jwt = _jwtTokenService.CreateToken(claims, expiresUtc);
@@ -182,11 +209,17 @@ public sealed class AuthController : Controller
         try
         {
             var user = await _userManager.GetUserAsync(User);
+
             if (user != null)
+            { 
+                user.ActiveSessionId = null;
+                user.ActiveSessionIssuedUtc = null;
+                await _userManager.UpdateAsync(user);
+                 
                 await _userManager.UpdateSecurityStampAsync(user);
+            }
 
             await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
-
             await _signInManager.SignOutAsync();
 
             HttpContext.Session.Clear();
@@ -199,21 +232,21 @@ public sealed class AuthController : Controller
         }
         catch (Exception ex)
         {
-            
             ErrorLog.LogErrorToFile(ex, "Unexpected error in AuthController.Logout");
-             
+
             try
             {
                 HttpContext.Session.Clear();
                 Response.Cookies.Delete(".AspNetCore.Identity.Application");
                 Response.Cookies.Delete(".AspNetCore.Session");
             }
-            catch {  }
+            catch { }
 
             TempData["ToastError"] = "Logout failed due to a server error. Please try again.";
             return RedirectToAction("Login", "Auth");
         }
     }
+
 
 
     [HttpGet, AllowAnonymous]
@@ -235,8 +268,7 @@ public sealed class AuthController : Controller
 
             var user = new ApplicationUser
             {
-                UserName = model.Username,
-                Email = model.Email
+                UserName = model.Username
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -263,4 +295,7 @@ public sealed class AuthController : Controller
         }
     }
 
+    [Authorize]
+    [HttpGet]
+    public IActionResult PingAuth() => Ok(new { ok = true });
 }
