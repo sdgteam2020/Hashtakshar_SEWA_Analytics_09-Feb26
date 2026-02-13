@@ -37,7 +37,7 @@ public sealed class DeviceService : IDeviceService
 
             Guid id;
 
-            // Try to get existing device Id (if none, GetScalarAsync might throw)
+            
             try
             {
                 id = await repo.GetScalarAsync(
@@ -52,7 +52,6 @@ public sealed class DeviceService : IDeviceService
 
             Device? device = null;
 
-            // Auto-register if not found
             if (id == Guid.Empty)
             {
                 var (hash, salt) = _deviceKeyHasher.Hash(deviceKey);
@@ -72,7 +71,6 @@ public sealed class DeviceService : IDeviceService
                 if (!keyOk) return null;
             }
 
-            // ✅ Issue DEVICE JWT
             var claims = new List<Claim>
             {
                 new("token_type", "device"),

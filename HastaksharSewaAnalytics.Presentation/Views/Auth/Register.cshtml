@@ -36,7 +36,6 @@
                     </div>
                 }
 
-                <!-- Username -->
                 <div class="mb-3">
                     <label class="form-label text-muted">Username</label>
                     <input class="form-control register-pill"
@@ -52,22 +51,6 @@
                     </div>
                 </div>
 
-                <!-- Email -->
-                <div class="mb-3">
-                    <label class="form-label text-muted">Email</label>
-                    <input class="form-control register-pill"
-                           type="email"
-                           name="Email"
-                           value="@Model?.Email"
-                           placeholder="Enter email"
-                           autocomplete="email"
-                           required />
-                    <div class="text-danger small mt-1">
-                        @Html.ValidationMessage("Email")
-                    </div>
-                </div>
-
-                <!-- Password -->
                 <div class="mb-3">
                     <label class="form-label text-muted">Password</label>
 

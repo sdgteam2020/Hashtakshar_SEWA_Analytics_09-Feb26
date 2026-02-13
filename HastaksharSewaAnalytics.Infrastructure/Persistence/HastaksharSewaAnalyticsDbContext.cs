@@ -1,5 +1,5 @@
 ﻿using HastaksharSewaAnalytics.Domain.Entities;
-using HastaksharSewaAnalytics.Infrastructure.Identity;
+using HastaksharSewaAnalytics.Domain.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

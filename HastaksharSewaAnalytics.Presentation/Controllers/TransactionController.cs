@@ -31,8 +31,7 @@ public class TransactionController : Controller
             return BadRequest(result);
         }
         catch (Exception ex)
-        {
-            // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+        { 
             Console.WriteLine($"Error in SaveVaultMasterData: {ex.Message}");
             ErrorLog.LogErrorToFile(ex, $"Error in SaveVaultMasterData for SerialNo: {obj.SerialNo}");
             return BadRequest(false);
@@ -53,8 +52,7 @@ public class TransactionController : Controller
             return BadRequest(result);
         }
         catch (Exception ex)
-        {
-            // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+        { 
             Console.WriteLine($"Error in SaveInstallationAsync: {ex.Message}");
             ErrorLog.LogErrorToFile(ex, $"Error in SaveInstallationAsync for DomainId: {obj.domainId}");
             return BadRequest(false);
@@ -86,8 +84,7 @@ public class TransactionController : Controller
     public async Task<IActionResult> Search([FromBody] VaultSearchRequest req, CancellationToken ct)
     {
         try
-        {
-            // your WPF is sending ArmyNo = query
+        { 
             var term = (req?.ArmyNo ?? req?.Term ?? req?.Name ?? "").Trim();
 
             if (term.Length < 2)

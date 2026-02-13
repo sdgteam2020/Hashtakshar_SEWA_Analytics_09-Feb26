@@ -13,3 +13,7 @@
 
 # Visual Studio cache
 .vs/
+/HastaksharSewaAnalytics.Presentation/App_Data/
+/HastaksharSewaAnalytics.Presentation/Properties/PublishProfiles/FolderProfile2.pubxml.user
+/HastaksharSewaAnalytics.Presentation/Properties/PublishProfiles/FolderProfile2.pubxml.user
+
