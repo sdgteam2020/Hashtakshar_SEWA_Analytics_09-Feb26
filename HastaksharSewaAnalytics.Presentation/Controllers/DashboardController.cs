@@ -19,11 +19,13 @@ public sealed class DashboardController : Controller
 
     [HttpGet("/Dashboard/TotalInstallCount")]
     [Authorize]
-    public async Task<IActionResult> TotalInstallCount()
+    public async Task<IActionResult> TotalInstallCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
         dynamic totalCount = 0;
         try
         {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
             totalCount = await _dashboardRepository.GetTotalInstallationsAsync();
         }
         catch (Exception ex)
@@ -36,11 +38,13 @@ public sealed class DashboardController : Controller
 
     [HttpGet("/Dashboard/TodayUserCount")]
     [Authorize]
-    public async Task<IActionResult> TodayUserCount()
+    public async Task<IActionResult> TodayUserCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
         dynamic count = 0;
         try
         {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
             count = await _dashboardRepository.GetTodayUserCount();
         }
         catch (Exception ex)
@@ -53,10 +57,12 @@ public sealed class DashboardController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetApplications()
+    public async Task<IActionResult> GetApplications([FromHeader(Name = "X-Requested-With")] string xrw)
     {
         try
         {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
             var data = await _dashboardRepository.GetHastaksharSewaInstallationsQuery();
             return Json(data);
         }
@@ -69,10 +75,12 @@ public sealed class DashboardController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetTodayUsers()
+    public async Task<IActionResult> GetTodayUsers([FromHeader(Name = "X-Requested-With")] string xrw)
     {
         try
         {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
             var data = await _dashboardRepository.GetHastaksharSewaDailyRunQuery();
             return Json(data);
         }
@@ -84,11 +92,13 @@ public sealed class DashboardController : Controller
     }
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetClientErrorLogsCount()
+    public async Task<IActionResult> GetClientErrorLogsCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
         dynamic count = 0;
         try
         {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
             count = await _dashboardRepository.GetClientErrorLogsCounts();
             return Json(new { clientErrorLogsCount = count });
         }
@@ -118,11 +128,13 @@ public sealed class DashboardController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetVaultDataCount()
+    public async Task<IActionResult> GetVaultDataCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
         dynamic count = 0;
         try
         {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
             count = await _dashboardRepository.GetVaultDataCount();
             return Json(new { vaultDataCount = count });
         }
@@ -135,10 +147,12 @@ public sealed class DashboardController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetVaultMasterData()
+    public async Task<IActionResult> GetVaultMasterData([FromHeader(Name = "X-Requested-With")] string xrw)
     {
         try
         {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
             var data = await _dashboardRepository.GetVaultMasterData();
             return Json(data);
         }
@@ -150,11 +164,13 @@ public sealed class DashboardController : Controller
     }
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetDigitalSignCount()
+    public async Task<IActionResult> GetDigitalSignCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
         dynamic count = 0;
         try
         {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
             count = await _digitalSignService.GetDigitalSignCountAsync();
             return Json(new { digitalSignCount = count });
         }
@@ -166,10 +182,12 @@ public sealed class DashboardController : Controller
     }
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetDigitalSignList()
+    public async Task<IActionResult> GetDigitalSignList([FromHeader(Name = "X-Requested-With")] string xrw)
     {
         try
         {
+            if (xrw != "XMLHttpRequest")
+                return Forbid();
             var data = await _digitalSignService.GetDigitalSignListAsync();
             return Json(data);
         }

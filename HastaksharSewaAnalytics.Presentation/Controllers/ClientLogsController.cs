@@ -21,7 +21,6 @@ public class ClientLogsController : Controller
     }
 
     [Authorize(Policy = "DeviceOnly")]
-    //[AllowAnonymous]
     [HttpPost("api/ClientLogs/SaveClientLogs")]
     public async Task<IActionResult> SaveClientLogs([FromBody]ClientErrorLogRequest clientErrorLogRequest, CancellationToken cancellationToken)
     {

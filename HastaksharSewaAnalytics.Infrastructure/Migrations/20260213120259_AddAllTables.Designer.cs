@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HastaksharSewaAnalytics.Infrastructure.Migrations
 {
     [DbContext(typeof(HastaksharSewaAnalyticsDbContext))]
-    [Migration("20260212092915_addSessionIdInApplicationTable")]
-    partial class addSessionIdInApplicationTable
+    [Migration("20260213120259_AddAllTables")]
+    partial class AddAllTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
