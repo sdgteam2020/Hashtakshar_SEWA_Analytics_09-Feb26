@@ -3,7 +3,6 @@ namespace HastaksharSewaAnalytics.Domain.Entities;
 
 public sealed class ClientErrorLog : AuditableEntity<Guid>
 {
-    // State is protected
     public string AppName { get; private set; } = default!;
     public string? AppVersion { get; private set; }
 
@@ -21,13 +20,11 @@ public sealed class ClientErrorLog : AuditableEntity<Guid>
     public bool IsResolved { get; private set; }
     public DateTimeOffset? ResolvedAtUtc { get; private set; }
     public string? ResolutionNote { get; private set; }
-
-    // EF Core needs a parameterless constructor
+     
     private ClientErrorLog() : base(Guid.Empty) { }
 
     private ClientErrorLog(Guid id) : base(id) { }
-
-    // ---------- FACTORY ----------
+     
     public static ClientErrorLog Create(
         string appName,
         string errorMessage,
@@ -70,13 +67,11 @@ public sealed class ClientErrorLog : AuditableEntity<Guid>
 
         return log;
     }
-
-    // ---------- BEHAVIOURS ----------
+     
     public void AttachExtra(string extra)
     {
         if (string.IsNullOrWhiteSpace(extra)) return;
-
-        // Append safely (avoid unbounded growth)
+         
         var append = extra.Trim();
         var combined = string.IsNullOrWhiteSpace(Extra) ? append : $"{Extra}\n{append}";
         Extra = Truncate(combined, 2000);
@@ -100,8 +95,7 @@ public sealed class ClientErrorLog : AuditableEntity<Guid>
         ResolvedAtUtc = null;
         ResolutionNote = Truncate(note, 1000);
     }
-
-    // ---------- HELPERS ----------
+     
     private static string? Normalize(string? value, int maxLen)
         => string.IsNullOrWhiteSpace(value) ? null : Truncate(value.Trim(), maxLen);
 

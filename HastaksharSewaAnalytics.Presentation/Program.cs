@@ -9,6 +9,7 @@ using HastaksharSewaAnalytics.Infrastructure.Services;
 using HastaksharSewaAnalytics.Presentation.Logging;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -175,10 +176,26 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
- 
+
+builder.Services.AddHsts(options =>
+{
+    options.Preload = true;                 
+    options.IncludeSubDomains = true;       
+    options.MaxAge = TimeSpan.FromDays(365);
+});
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
+});
+
 ErrorLog.Env = builder.Environment;
+
 var app = builder.Build();
- 
+
+
+app.UseForwardedHeaders();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -193,6 +210,8 @@ app.Use(async (ctx, next) =>
 });
 
 app.UseHttpsRedirection();
+
+
 app.UseStaticFiles();
 
 app.UseRouting();

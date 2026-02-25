@@ -3,8 +3,7 @@
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
 public sealed class HastaksharSewaInstallation : AuditableEntity<Guid>
-{
-    // EF Core needs parameterless ctor (optional but recommended)
+{ 
     private HastaksharSewaInstallation() : base(Guid.Empty) { }
 
     private HastaksharSewaInstallation(
@@ -25,10 +24,8 @@ public sealed class HastaksharSewaInstallation : AuditableEntity<Guid>
     public string IPAddress { get; private set; } = "";
     public string Version { get; private set; } = "";
     public DateTimeOffset InstallDate { get; private set; }
-
-    // ---------------------------
-    // Factory (Create)
-    // ---------------------------
+     
+   
     public static HastaksharSewaInstallation Create(
         string domainId,
         string ipAddress,
@@ -47,15 +44,12 @@ public sealed class HastaksharSewaInstallation : AuditableEntity<Guid>
 
         return entity;
     }
-
-    // ---------------------------
-    // Behaviors (Update)
-    // ---------------------------
+     
     public void UpdateInstallation(string ipAddress, string version, string modifiedBy)
     {
         SetIpAddress(ipAddress);
         SetVersion(version);
-        SetModified(modifiedBy); // audit
+        SetModified(modifiedBy);  
     }
 
     public void ChangeDomain(string domainId, string modifiedBy)
@@ -63,10 +57,7 @@ public sealed class HastaksharSewaInstallation : AuditableEntity<Guid>
         SetDomainId(domainId);
         SetModified(modifiedBy);
     }
-
-    // ---------------------------
-    // Private setters with rules
-    // ---------------------------
+     
     private void SetDomainId(string domainId)
     {
         if (string.IsNullOrWhiteSpace(domainId))

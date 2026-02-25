@@ -18,9 +18,7 @@ public sealed class VaultMaster : AuditableEntity<Guid>
         TokenValid = tokenValid;
         SetValidFrom(validFrom);
         SetValidTo(validTo);
-    }
-
-    // EF Core needs a parameterless constructor (optional but recommended)
+    } 
     private VaultMaster() : base(Guid.Empty) { }
 
     [Required]
@@ -37,9 +35,7 @@ public sealed class VaultMaster : AuditableEntity<Guid>
     [Required]
     public string ValidTo { get; private set; } = DateOnly.MinValue.ToString();
 
-
-
-    //  Factory (single safe entry point)
+     
     public static VaultMaster Create(        
         string publicKey,
         string serialNo,
@@ -56,12 +52,9 @@ public sealed class VaultMaster : AuditableEntity<Guid>
             validFrom,
             validTo
         );
-
-        //entity.SetCreated(createdBy);
+         
         return entity;
-    }
-
-    //  Rich behavior (not direct setters)
+    } 
     public void Update(
         string name,
         string rank,

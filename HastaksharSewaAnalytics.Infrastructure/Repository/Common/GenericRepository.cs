@@ -48,20 +48,17 @@ public sealed record GenericRepository<TEntity, TId> : IGenericRepository<TEntit
         CancellationToken cancellationToken = default)
     {
         IQueryable<TEntity> query = _set.AsNoTracking();
-
-        // 1. Filter data (WHERE clause)
+         
         if (predicate != null)
         {
             query = query.Where(predicate);
         }
-
-        // 2. Sort data (ORDER BY clause)
+         
         if (orderBy != null)
         {
             query = orderBy(query);
         }
-
-        // 3. Project to DTO (SELECT clause + automatic JOINs)
+         
         return await query.Select(selector).ToListAsync(cancellationToken);
     }
 

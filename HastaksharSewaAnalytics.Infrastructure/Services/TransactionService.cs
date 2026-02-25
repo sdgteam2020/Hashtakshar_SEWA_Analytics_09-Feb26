@@ -133,8 +133,7 @@ public sealed record TransactionService : ITransactionService
     {
         term = (term ?? "").Trim();
         if (term.Length == 0) return new List<XmlDataForPublicKeyResponse>();
-
-        // ✅ PostgreSQL: ILIKE for case-insensitive contains
+         
         var repo = _unitOfWork.Repository<VaultMaster, Guid>();
         var list = await repo.GetListAsync(
             selector: x => new XmlDataForPublicKeyResponse
@@ -150,8 +149,7 @@ public sealed record TransactionService : ITransactionService
             orderBy: q => q.OrderBy(x => x.SerialNo),
             cancellationToken: ct
         );
-
-        // optional: limit results for UI autocomplete
+         
         return list.Take(20).ToList();
     }
 }

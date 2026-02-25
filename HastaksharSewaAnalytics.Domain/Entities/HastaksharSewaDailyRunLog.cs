@@ -4,8 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
 public sealed class HastaksharSewaDailyRunLog : AuditableEntity<Guid>
-{
-    // EF Core needs parameterless ctor (can be private)
+{ 
     private HastaksharSewaDailyRunLog() : base(Guid.Empty) { }
 
     private HastaksharSewaDailyRunLog(
@@ -33,8 +32,7 @@ public sealed class HastaksharSewaDailyRunLog : AuditableEntity<Guid>
 
     [Required]
     public DateTimeOffset RunOnDate { get; private set; }
-
-    // ✅ Factory (Create)
+     
     public static HastaksharSewaDailyRunLog Create(
         string domainId,
         string ipAddress,
@@ -56,8 +54,7 @@ public sealed class HastaksharSewaDailyRunLog : AuditableEntity<Guid>
 
         return entity;
     }
-
-    // ✅ Rich behaviour (keep entity valid)
+     
     public void UpdateVersion(string version, string modifiedBy)
     {
         SetVersion(version);
@@ -81,14 +78,10 @@ public sealed class HastaksharSewaDailyRunLog : AuditableEntity<Guid>
         RunOnDate = runOnDate;
         SetModified(modifiedBy);
     }
-
-    // Optional: convenience for daily jobs
+     
     public void MarkRunTodayUtc(string modifiedBy)
         => MarkRunDate(DateTimeOffset.UtcNow, modifiedBy);
-
-    // -----------------------
-    // Guards / invariants
-    // -----------------------
+     
     private void SetDomainId(string domainId)
     {
         if (string.IsNullOrWhiteSpace(domainId))

@@ -16,8 +16,8 @@ public sealed record DashboardService : IDashboardService
     public async Task<List<GetInstallAppDataResponse>> GetHastaksharSewaDailyRunQuery(CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.Repository<HastaksharSewaDailyRunLog, Guid>();
-
-        // 1) DB query: only select raw fields (EF-translatable)
+        var todayUtc = DateTime.UtcNow.Date;
+        var tomorrowUtc = todayUtc.AddDays(1);
         var rows = await repo.GetListAsync(
             selector: x => new
             {
@@ -27,21 +27,20 @@ public sealed record DashboardService : IDashboardService
                 x.Version,
                 x.RunOnDate
             },
-            predicate: null,
+            predicate: p => p.RunOnDate >= todayUtc && p.RunOnDate < tomorrowUtc,
             orderBy: q => q.OrderByDescending(x => x.RunOnDate),
             cancellationToken: cancellationToken
         );
 
-        // 2) In-memory: convert to IST and format
         var istOffset = TimeSpan.FromHours(5.5);
 
-        return rows.Select(x => new GetInstallAppDataResponse(
+        return [.. rows.Select(x => new GetInstallAppDataResponse(
             x.Id,
             x.DomainId,
             x.IPAddress,
             x.Version,
             x.RunOnDate.ToOffset(istOffset).ToString("dd-MM-yyyy hh:mm tt")
-        )).ToList();
+        ))];
     }
 
     public async Task<List<GetInstallAppDataResponse>> GetHastaksharSewaInstallationsQuery(
@@ -49,7 +48,6 @@ public sealed record DashboardService : IDashboardService
     {
         var repo = _unitOfWork.Repository<HastaksharSewaInstallation, Guid>();
 
-        // 1) Fetch raw columns only (EF translatable)
         var rows = await repo.GetListAsync(
             selector: x => new
             {
@@ -64,16 +62,15 @@ public sealed record DashboardService : IDashboardService
             cancellationToken: cancellationToken
         );
 
-        // 2) Convert/format in-memory (safe)
         var istOffset = TimeSpan.FromHours(5.5);
 
-        return rows.Select(x => new GetInstallAppDataResponse(
+        return [.. rows.Select(x => new GetInstallAppDataResponse(
             x.Id,
             x.DomainId,
             x.IPAddress,
             x.Version,
             x.InstallDate.ToOffset(istOffset).ToString("dd-MM-yyyy hh:mm tt")
-        )).ToList();
+        ))];
     }
 
 
@@ -82,7 +79,7 @@ public sealed record DashboardService : IDashboardService
         var repo = _unitOfWork.Repository<HastaksharSewaDailyRunLog, Guid>();
         var todayStartUtc = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero);
         var tomorrowStartUtc = todayStartUtc.AddDays(1);
-        return await repo.CountAsync(x => x.RunOnDate >= todayStartUtc && x.RunOnDate <tomorrowStartUtc, cancellationToken);
+        return await repo.CountAsync(x => x.RunOnDate >= todayStartUtc && x.RunOnDate < tomorrowStartUtc, cancellationToken);
     }
 
     public async Task<int> GetTotalInstallationsAsync(CancellationToken cancellationToken = default)
@@ -102,7 +99,6 @@ public sealed record DashboardService : IDashboardService
     {
         var repo = _unitOfWork.Repository<ClientErrorLog, Guid>();
 
-        // 1) Query only raw fields (EF-translatable)
         var rows = await repo.GetListAsync(
             selector: x => new
             {
@@ -125,11 +121,9 @@ public sealed record DashboardService : IDashboardService
             cancellationToken: cancellationToken
         );
 
-        // 2) Convert + format in memory
-        // If CreatedAt is DateTimeOffset (best), use offset conversion:
         var istOffset = TimeSpan.FromHours(5.5);
 
-        return rows.Select(x => new GetClientErrorLogsResponse(
+        return [.. rows.Select(x => new GetClientErrorLogsResponse(
             x.Id,
             x.AppName,
             x.ErrorMessage!,
@@ -142,9 +136,8 @@ public sealed record DashboardService : IDashboardService
             x.SystemDirectory!,
             x.AppVersion!,
             x.Extra!,
-            // If CreatedAt is DateTimeOffset:
             x.CreatedAt.ToOffset(istOffset).ToString("dd-MM-yyyy HH:mm")
-        )).ToList();
+        ))];
     }
 
 
@@ -159,7 +152,6 @@ public sealed record DashboardService : IDashboardService
     {
         var repo = _unitOfWork.Repository<VaultMaster, Guid>();
 
-        // 1) EF query: raw fields only
         var rows = await repo.GetListAsync(
             selector: x => new
             {
@@ -177,10 +169,9 @@ public sealed record DashboardService : IDashboardService
             cancellationToken: cancellationToken
         );
 
-        // 2) In-memory: IST conversion + formatting
         var istOffset = TimeSpan.FromHours(5.5);
 
-        return rows.Select(x => new GetPublicKeyValtResponse(
+        return [.. rows.Select(x => new GetPublicKeyValtResponse(
             x.Id,
             x.Public_Key!,
             x.SerialNo!,
@@ -189,7 +180,7 @@ public sealed record DashboardService : IDashboardService
             x.ValidTo!,
             x.CreatedBy!,
             x.CreatedAt.ToOffset(istOffset).ToString("dd-MM-yyyy hh:mm tt")
-        )).ToList();
+        ))];
     }
 
 }

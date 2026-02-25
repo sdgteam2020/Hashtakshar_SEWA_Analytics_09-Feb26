@@ -16,8 +16,7 @@ public sealed class DeviceAuthController : ControllerBase
     {
         _deviceService = deviceService;
     }
-
-    // POST: /api/device-auth/token
+     
     [HttpPost("token"), AllowAnonymous]
     public async Task<IActionResult> Token([FromBody] DeviceRequest request, CancellationToken ct)
     {
@@ -28,8 +27,7 @@ public sealed class DeviceAuthController : ControllerBase
             return Ok(token);
         }
         catch (Exception ex)
-        {
-            // Log the exception (not implemented here)
+        { 
             return StatusCode(500, new { message = "An error occurred while processing the request.", details = ex.Message });
         }
     }

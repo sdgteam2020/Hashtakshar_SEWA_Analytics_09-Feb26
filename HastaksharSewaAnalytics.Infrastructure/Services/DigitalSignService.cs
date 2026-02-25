@@ -91,8 +91,7 @@ public sealed record DigitalSignService : IDigitalSignService
             return isSave > 0;
         }
         catch (Exception)
-        {
-            // Log the exception
+        { 
             throw;
         }
     }
