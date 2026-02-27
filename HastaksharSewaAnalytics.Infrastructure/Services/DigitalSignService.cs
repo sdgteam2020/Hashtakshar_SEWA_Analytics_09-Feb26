@@ -17,14 +17,14 @@ public sealed record DigitalSignService : IDigitalSignService
 
     public async Task<int> GetDigitalSignCountAsync(CancellationToken cancellationToken = default)
     {
-        return await _UoW.Repository<DigitalSignDetail, Guid>()
+        return await _UoW.Repository<DigitalSignDetail, int>()
             .CountAsync(null, cancellationToken);
     }
 
     public async Task<List<GetDigitalSignRespone>> GetDigitalSignListAsync(CancellationToken cancellationToken = default)
     {
-        var digitalSign = _UoW.Repository<DigitalSignDetail, Guid>().Query();
-        var userData = _UoW.Repository<VaultMaster, Guid>().Query();
+        var digitalSign = _UoW.Repository<DigitalSignDetail, int>().Query();
+        var userData = _UoW.Repository<VaultMaster, int>().Query();
         var data = await (from ds in digitalSign
                           join ud in userData on ds.ValtMasterId equals ud.Id
                           orderby ds.SignDateTime descending
@@ -45,14 +45,14 @@ public sealed record DigitalSignService : IDigitalSignService
         if (saveDigitalSignRequest == null) throw new ArgumentNullException(nameof(saveDigitalSignRequest));
         try
         {
-            var userDataRepo = _UoW.Repository<VaultMaster, Guid>();
-            var digitalSignRepo = _UoW.Repository<DigitalSignDetail, Guid>();
+            var userDataRepo = _UoW.Repository<VaultMaster, int>();
+            var digitalSignRepo = _UoW.Repository<DigitalSignDetail, int>();
             int existingCount = await userDataRepo
                                             .CountAsync(
                                                 predicate: p => p.SerialNo
                                                 .Equals(saveDigitalSignRequest.SerialNo),
                                                 cancellationToken);
-            Guid PublicUserDataId = Guid.Empty;
+            int PublicUserDataId = 0;
             if (existingCount <= 0)
             {
                 var userEntity = VaultMaster.Create(

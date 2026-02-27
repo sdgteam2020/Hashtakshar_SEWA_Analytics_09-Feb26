@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
-public sealed class HastaksharSewaDailyRunLog : AuditableEntity<Guid>
+public sealed class HastaksharSewaDailyRunLog : AuditableEntity<int>
 { 
-    private HastaksharSewaDailyRunLog() : base(Guid.Empty) { }
+    private HastaksharSewaDailyRunLog() : base(0) { }
 
     private HastaksharSewaDailyRunLog(
-        Guid id,
+        int id,
         string domainId,
         string ipAddress,
         string version,
@@ -42,7 +42,7 @@ public sealed class HastaksharSewaDailyRunLog : AuditableEntity<Guid>
     )
     {
         var entity = new HastaksharSewaDailyRunLog(
-            Guid.NewGuid(),
+            0,
             domainId,
             ipAddress,
             version,

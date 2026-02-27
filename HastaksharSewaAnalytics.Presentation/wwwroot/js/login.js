@@ -75,7 +75,7 @@ function encryptData(plainText) {
     if (!secretKey) return "";
 
     const key = CryptoJS.enc.Utf8.parse(secretKey);
-    const iv = CryptoJS.enc.Utf8.parse(secretKey.substring(0, 16)); // 16 bytes
+    const iv = CryptoJS.enc.Utf8.parse(secretKey.substring(0, 16));
 
     const encrypted = CryptoJS.AES.encrypt(plainText, key, {
         iv: iv,
@@ -83,7 +83,7 @@ function encryptData(plainText) {
         padding: CryptoJS.pad.Pkcs7
     });
 
-    return encrypted.toString();   // Base64 output
+    return encrypted.toString();
 }
 function decryptData(cipherText) {
 
@@ -95,7 +95,6 @@ function decryptData(cipherText) {
     const key = CryptoJS.enc.Utf8.parse(secretKey);
     const iv = CryptoJS.enc.Utf8.parse(secretKey.substring(0, 16));
 
-    // fix if spaces replaced +
     cipherText = cipherText.replace(/ /g, "+");
 
     const decrypted = CryptoJS.AES.decrypt(cipherText, key, {

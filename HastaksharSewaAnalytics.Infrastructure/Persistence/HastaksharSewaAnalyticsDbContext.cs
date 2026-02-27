@@ -29,5 +29,40 @@ public sealed class HastaksharSewaAnalyticsDbContext
             .WithMany()
             .HasForeignKey(d => d.ValtMasterId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ClientErrorLog>(entity => {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).ValueGeneratedOnAdd();
+        });
+
+        builder.Entity<DigitalSignDetail> (entity => 
+        { 
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).ValueGeneratedOnAdd();
+        });
+
+        builder.Entity<HastaksharSewaDailyRunLog>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).ValueGeneratedOnAdd();
+        });
+
+        builder.Entity<HastaksharSewaInstallation>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).ValueGeneratedOnAdd();
+        });
+
+        builder.Entity<VaultMaster>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).ValueGeneratedOnAdd();
+        });
+
+        builder.Entity<Device>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).ValueGeneratedOnAdd();
+        });
     }
 }

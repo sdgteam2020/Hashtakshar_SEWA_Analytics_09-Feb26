@@ -15,7 +15,7 @@ internal static class Helper
         XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
         nsmgr.AddNamespace("ns", "http://schemas.datacontract.org/2004/07/DGIS_App_API.Helpers");
 
-        XmlNode node = doc.SelectSingleNode($"/PublicKeysData/ns:XmlDataForPublicKey[ns:SerialNo='{serialNo}']", nsmgr);
+        XmlNode node = doc.SelectSingleNode($"/PublicKeysData/ns:XmlDataForPublicKey[ns:SerialNo='{serialNo}']", nsmgr)!;
         if (node != null)
         {
             return true;

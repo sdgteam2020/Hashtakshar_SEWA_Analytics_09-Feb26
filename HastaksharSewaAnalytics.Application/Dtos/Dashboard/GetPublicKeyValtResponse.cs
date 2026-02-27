@@ -1,7 +1,7 @@
 ﻿namespace HastaksharSewaAnalytics.Application.Dtos.Dashboard;
 
 public sealed record GetPublicKeyValtResponse(
-    Guid Id,
+    int Id,
     string Public_Key,
     string SerialNo,
     bool TokenValid,

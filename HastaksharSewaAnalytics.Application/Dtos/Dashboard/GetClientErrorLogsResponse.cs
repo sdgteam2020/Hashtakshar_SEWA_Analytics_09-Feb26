@@ -1,7 +1,7 @@
 ﻿namespace HastaksharSewaAnalytics.Application.Dtos.Dashboard;
 
 public sealed record GetClientErrorLogsResponse(
-    Guid Id,
+    int Id,
     string AppName,
     string ErrorMessage,
     string StackTrace,

@@ -15,7 +15,7 @@ public sealed record DashboardService : IDashboardService
 
     public async Task<List<GetInstallAppDataResponse>> GetHastaksharSewaDailyRunQuery(CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.Repository<HastaksharSewaDailyRunLog, Guid>();
+        var repo = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
         var todayUtc = DateTime.UtcNow.Date;
         var tomorrowUtc = todayUtc.AddDays(1);
         var rows = await repo.GetListAsync(
@@ -46,7 +46,7 @@ public sealed record DashboardService : IDashboardService
     public async Task<List<GetInstallAppDataResponse>> GetHastaksharSewaInstallationsQuery(
      CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.Repository<HastaksharSewaInstallation, Guid>();
+        var repo = _unitOfWork.Repository<HastaksharSewaInstallation, int>();
 
         var rows = await repo.GetListAsync(
             selector: x => new
@@ -76,7 +76,7 @@ public sealed record DashboardService : IDashboardService
 
     public async Task<int> GetTodayUserCount(CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.Repository<HastaksharSewaDailyRunLog, Guid>();
+        var repo = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
         var todayStartUtc = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero);
         var tomorrowStartUtc = todayStartUtc.AddDays(1);
         return await repo.CountAsync(x => x.RunOnDate >= todayStartUtc && x.RunOnDate < tomorrowStartUtc, cancellationToken);
@@ -84,20 +84,20 @@ public sealed record DashboardService : IDashboardService
 
     public async Task<int> GetTotalInstallationsAsync(CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.Repository<HastaksharSewaInstallation, Guid>();
+        var repo = _unitOfWork.Repository<HastaksharSewaInstallation, int>();
         return await repo.CountAsync(null, cancellationToken);
     }
 
     public async Task<int> GetClientErrorLogsCounts(CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.Repository<ClientErrorLog, Guid>();
+        var repo = _unitOfWork.Repository<ClientErrorLog, int>();
         return await repo.CountAsync(null, cancellationToken);
     }
 
     public async Task<List<GetClientErrorLogsResponse>> GetClientErrorLogsData(
     CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.Repository<ClientErrorLog, Guid>();
+        var repo = _unitOfWork.Repository<ClientErrorLog, int>();
 
         var rows = await repo.GetListAsync(
             selector: x => new
@@ -143,14 +143,14 @@ public sealed record DashboardService : IDashboardService
 
     public async Task<int> GetVaultDataCount(CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.Repository<VaultMaster, Guid>();
+        var repo = _unitOfWork.Repository<VaultMaster, int>();
         return await repo.CountAsync(null, cancellationToken);
     }
 
     public async Task<List<GetPublicKeyValtResponse>> GetVaultMasterData(
     CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.Repository<VaultMaster, Guid>();
+        var repo = _unitOfWork.Repository<VaultMaster, int>();
 
         var rows = await repo.GetListAsync(
             selector: x => new

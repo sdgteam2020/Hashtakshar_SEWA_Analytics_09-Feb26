@@ -16,13 +16,11 @@
 
     bindToggle("toggleRegPwd", "regPassword");
     bindToggle("toggleRegConfirmPwd", "regConfirmPassword");
-
-    // ✅ Block special characters in Username (Register)
+     
     const regUsernameInput = document.querySelector('input[name="Username"]');
 
     if (regUsernameInput) {
-        regUsernameInput.addEventListener("input", function () {
-            // Allow: letters, numbers, dot, underscore, hyphen
+        regUsernameInput.addEventListener("input", function () { 
             const allowed = /[^a-zA-Z0-9._-]/g;
 
             if (allowed.test(this.value)) {

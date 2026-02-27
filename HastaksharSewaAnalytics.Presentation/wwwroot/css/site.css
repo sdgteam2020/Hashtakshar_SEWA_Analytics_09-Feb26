@@ -1,7 +1,4 @@
-/* =====================================================
-   GLOBAL HTML / BOOTSTRAP BASE (KEEP)
-   ===================================================== */
-
+ 
 html {
     font-size: 14px;
     height: 100%;
@@ -12,14 +9,12 @@ html {
         font-size: 16px;
     }
 }
-
-/* Bootstrap focus */
+ 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
 .form-control:focus, .form-check-input:focus {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
-
-/* Footer pinned layout */
+ 
 body {
     min-height: 100%;
     display: flex;
@@ -30,8 +25,7 @@ body {
 main {
     flex: 1;
 }
-
-/* Footer theme */
+ 
 .app-footer {
     border-top: 1px solid rgba(255,255,255,.06);
     background: linear-gradient(180deg, #0c1f14 0%, #1b3526 100%);
@@ -48,8 +42,7 @@ main {
             color: #fff;
             text-decoration: underline;
         }
-
-/* Keep your existing RTL placeholder alignment */
+         
 .form-floating > .form-control-plaintext::placeholder,
 .form-floating > .form-control::placeholder {
     color: var(--bs-secondary-color);
@@ -61,55 +54,36 @@ main {
     text-align: start;
 }
 
+ 
 
-/* =====================================================
-   THEME TOKENS (SAFE GLOBAL)
-   ===================================================== */
-
-:root {
-    /* Background layers */
+:root {     
     --bg: #0b1d13;
-    --bg-2: #0f2418;
-    /* Surfaces / cards */
+    --bg-2: #0f2418; 
     --panel: #14281c;
     --panel-2: #1c3926;
-    --panel-3: #274532;
-    /* Typography */
+    --panel-3: #274532; 
     --text: #ecf6e8;
-    --muted: #cbdac6;
-    /* Accents */
+    --muted: #cbdac6; 
     --accent: #a5cf82;
-    --accent-2: #8bbf6c;
-    /* Supporting greens */
+    --accent-2: #8bbf6c; 
     --olive: #223d2b;
-    --olive-soft: #2c4d38;
-    /* Status colors */
+    --olive-soft: #2c4d38; 
     --success: #6fb36a;
     --warning: #c6b54a;
     --danger: #bb4a4a;
 }
 
-
-/* =====================================================
-   GLOBAL THEME WRAPPER
-   Apply on ALL pages by using:
-     <body class="hs-theme">
-   ===================================================== */
+ 
 
 .hs-theme {
     background: radial-gradient(1200px 600px at -10% -20%, #173422 0%, transparent 60%), radial-gradient(1200px 600px at 110% 120%, #173422 0%, transparent 60%), linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
     color: var(--text);
 }
-
-    /* Ensure main spans full height under flex body */
+ 
     .hs-theme main {
         min-height: 1px;
     }
-
-    /* =====================================================
-   IMPORTANT FIX: FORCE LIGHT TEXT + ICON COLOR
-   (Bootstrap default colors are dark; this prevents black text/icons)
-   ===================================================== */
+ 
 
     .hs-theme,
     .hs-theme body,
@@ -138,22 +112,19 @@ main {
         .hs-theme th, .hs-theme td {
             color: inherit;
         }
-
-        /* Muted text */
+         
         .hs-theme .text-muted,
         .hs-theme .muted,
         .hs-theme small {
             color: var(--muted) !important;
         }
-
-        /* Prevent Bootstrap text utility classes from making text dark */
+         
         .hs-theme .text-dark,
         .hs-theme .text-body,
         .hs-theme .text-secondary {
             color: var(--text) !important;
         }
-
-        /* Links */
+         
         .hs-theme a,
         .hs-theme .nav-link {
             color: var(--muted);
@@ -163,26 +134,21 @@ main {
             .hs-theme .nav-link:hover {
                 color: var(--text);
             }
-
-        /* Icons inherit text color by default */
+ 
         .hs-theme .bi,
         .hs-theme i,
         .hs-theme svg {
             color: inherit;
         }
 
-
-        /* =====================================================
-   APP NAVBAR (your layout uses .app-navbar)
-   ===================================================== */
+ 
 
         .hs-theme .app-navbar {
             background: linear-gradient(180deg, #0c1f14 0%, #1b3526 100%);
             border-bottom: 1px solid rgba(255,255,255,.06);
             box-shadow: 0 6px 18px rgba(0,0,0,.35);
         }
-
-        /* Small square emblem placeholder */
+         
         .hs-theme .emblem {
             width: 36px;
             height: 36px;
@@ -191,11 +157,7 @@ main {
             margin-right: .5rem;
             display: inline-block;
         }
-
-
-        /* =====================================================
-   SECTION TABS (Bootstrap nav-tabs refinements)
-   ===================================================== */
+         
 
         .hs-theme .nav-tabs {
             border-bottom: 1px solid rgba(255,255,255,.06) !important;
@@ -222,11 +184,7 @@ main {
                         height: 2px;
                         background: linear-gradient(90deg, rgba(255,255,255,.0), var(--accent), rgba(255,255,255,.0));
                     }
-
-
-        /* =====================================================
-   CARDS (base panel surface)
-   ===================================================== */
+ 
 
         .hs-theme .card {
             background: var(--panel);
@@ -234,23 +192,18 @@ main {
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0,0,0,.25);
         }
-
-        /* Titles */
+         
         .hs-theme .card-title {
             color: var(--muted);
             font-weight: 600;
         }
-
-        /* Optional glow helpers */
+         
         .hs-theme .kpi-glow,
         .hs-theme .panel-glow {
             box-shadow: 0 8px 24px rgba(0,0,0,.25), 0 0 0 1px rgba(165,207,130,.10), 0 0 28px rgba(165,207,130,.12);
         }
 
-
-        /* =====================================================
-   KPI CARDS
-   ===================================================== */
+         
 
         .hs-theme .kpi {
             background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel-3) 100%);
@@ -284,8 +237,7 @@ main {
                 font-weight: 700;
                 letter-spacing: .5px;
             }
-
-        /* Icon pill */
+             
         .hs-theme .icon-pill {
             width: 44px;
             height: 44px;
@@ -299,16 +251,12 @@ main {
             box-shadow: inset 0 0 8px rgba(0,0,0,.35), 0 0 10px rgba(165,207,130,.15);
         }
 
-        /* You had this helper in dashboard.css */
         .hs-theme .img-bi {
             color: var(--accent);
             font-size: 1.4rem;
         }
 
-
-        /* =====================================================
-   MAP PANEL (placeholder)
-   ===================================================== */
+         
 
         .hs-theme .map {
             height: 300px;
@@ -329,17 +277,11 @@ main {
 
             .hs-theme .pin.p2 {
                 background: #d6c24b;
-            }
-            /* warn */
+            } 
             .hs-theme .pin.p3 {
                 background: #86b98a;
             }
-        /* ok */
-
-
-        /* =====================================================
-   STATUS BARS (Alerts)
-   ===================================================== */
+       
 
         .hs-theme .bar {
             height: 14px;
@@ -366,10 +308,7 @@ main {
             background: linear-gradient(90deg, var(--success), #3b6f3a);
         }
 
-
-        /* =====================================================
-   TREND CHART (SVG sparkline style)
-   ===================================================== */
+         
 
         .hs-theme .trend {
             height: 180px;
@@ -396,10 +335,7 @@ main {
                 filter: drop-shadow(0 2px 2px rgba(0,0,0,.4));
             }
 
-
-        /* =====================================================
-   DONUT CHART (CSS-only)
-   ===================================================== */
+             
 
         .hs-theme .donut {
             --p1: 62;
@@ -421,11 +357,7 @@ main {
             display: inline-block;
             margin-right: .5rem;
         }
-
-
-        /* =====================================================
-   TABLES & FORMS (dark theme harmony)
-   ===================================================== */
+         
 
         .hs-theme .table {
             --bs-table-color: var(--text);
@@ -442,11 +374,7 @@ main {
             .hs-theme .form-control::placeholder {
                 color: rgba(255,255,255,.5);
             }
-
-
-        /* =====================================================
-   MODAL — Modern Olive
-   ===================================================== */
+             
 
         .hs-theme .modal-backdrop.show {
             background-color: #07140d;
@@ -547,18 +475,14 @@ main {
     border-radius: 14px;
     overflow: hidden;
 }
-
-/* Fix clipping inside Bootstrap modal (DataTables dropdowns) */
+ 
 .hs-theme .modal-olive,
 .hs-theme .modal-olive .modal-dialog,
 .hs-theme .modal-olive .modal-content {
     overflow: visible !important;
 }
 
-
-/* =====================================================
-   DATATABLES — Modern Olive Skin (v1 + v2)
-   ===================================================== */
+ 
 
 .hs-theme .dataTables_wrapper {
     color: var(--text);
@@ -623,8 +547,7 @@ main {
         background: rgba(165,207,130,.18) !important;
         color: var(--text);
     }
-
-/* Pagination */
+ 
 .hs-theme .dataTables_wrapper .dataTables_paginate {
     margin-top: .5rem;
 }
@@ -651,8 +574,7 @@ main {
             background: var(--accent);
             border-color: var(--accent-2);
         }
-
-/* Processing overlay */
+ 
 .hs-theme .dataTables_processing {
     color: var(--text);
     background: rgba(0,0,0,.35);
@@ -673,13 +595,11 @@ main {
         margin-top: .4rem;
     }
 }
-
-/* DataTables v2 container */
+ 
 .hs-theme .dt-container {
     color: var(--text);
 }
-
-/* Show entries dropdown */
+ 
 .hs-theme .dt-length .dt-input {
     color: var(--text);
     background-color: #102217;
@@ -728,17 +648,13 @@ main {
 .hs-theme div.dt-container select.dt-input {
     margin-left: 11px;
 }
-
-/* Ensure dropdown list appears above modal boundaries */
+ 
 .hs-theme .dt-length {
     position: relative;
     z-index: 1105;
 }
 
-
-/* =====================================================
-   BUTTONS — Olive Outline (generic)
-   ===================================================== */
+ 
 
 .hs-theme .btn-olive-outline {
     color: var(--text);
@@ -779,8 +695,7 @@ main {
         background: var(--accent);
         border-color: var(--accent-2);
     }
-
-/* Footer date/month badges */
+ 
 .hit-badge {
     min-width: 30px;
     height: 22px;
@@ -792,20 +707,19 @@ main {
     font-weight: 700;
     font-size: 12px;
     letter-spacing: .2px;
-    background: rgba(165,207,130,.12); /* olive glow */
+    background: rgba(165,207,130,.12);  
     border: 1px solid rgba(165,207,130,.25);
     color: var(--text);
     box-shadow: inset 0 0 10px rgba(0,0,0,.25);
 }
 
-
-/* Push toastr down from the top */
+ 
 #toast-container.toast-top-right {
-    top: 80px; /* adjust this value */
+    top: 80px; 
 }
 
 #toast-container.toast-top-left {
-    top: 80px; /* if you ever use top-left */
+    top: 80px;  
 }
 
 #toast-container.toast-top-center {

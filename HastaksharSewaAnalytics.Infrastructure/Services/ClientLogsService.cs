@@ -31,7 +31,7 @@ public sealed record ClientLogsService : IClientLogsService
             clientErrorLogRequest.AppVersion,
             clientErrorLogRequest.Extra
         );
-        var repository = _unitOfWork.Repository<ClientErrorLog, Guid>();
+        var repository = _unitOfWork.Repository<ClientErrorLog, int>();
         await repository.AddAsync(log);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;

@@ -2,12 +2,12 @@
 
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
-public sealed class HastaksharSewaInstallation : AuditableEntity<Guid>
-{ 
-    private HastaksharSewaInstallation() : base(Guid.Empty) { }
+public sealed class HastaksharSewaInstallation : AuditableEntity<int>
+{
+    private HastaksharSewaInstallation() : base(0) { }
 
     private HastaksharSewaInstallation(
-        Guid id,
+        int id,
         string domainId,
         string ipAddress,
         string version,
@@ -24,18 +24,18 @@ public sealed class HastaksharSewaInstallation : AuditableEntity<Guid>
     public string IPAddress { get; private set; } = "";
     public string Version { get; private set; } = "";
     public DateTimeOffset InstallDate { get; private set; }
-     
-   
+
+
     public static HastaksharSewaInstallation Create(
         string domainId,
         string ipAddress,
         string version,
         DateTimeOffset? installDate = null,
-        Guid? id = null
+        int? id = null
     )
     {
         var entity = new HastaksharSewaInstallation(
-            id ?? Guid.NewGuid(),
+            id: 0,
             domainId,
             ipAddress,
             version,
@@ -44,12 +44,12 @@ public sealed class HastaksharSewaInstallation : AuditableEntity<Guid>
 
         return entity;
     }
-     
+
     public void UpdateInstallation(string ipAddress, string version, string modifiedBy)
     {
         SetIpAddress(ipAddress);
         SetVersion(version);
-        SetModified(modifiedBy);  
+        SetModified(modifiedBy);
     }
 
     public void ChangeDomain(string domainId, string modifiedBy)
@@ -57,7 +57,7 @@ public sealed class HastaksharSewaInstallation : AuditableEntity<Guid>
         SetDomainId(domainId);
         SetModified(modifiedBy);
     }
-     
+
     private void SetDomainId(string domainId)
     {
         if (string.IsNullOrWhiteSpace(domainId))

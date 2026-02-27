@@ -2,11 +2,11 @@
 
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
-public sealed class DigitalSignDetail: AuditableEntity<Guid>
+public sealed class DigitalSignDetail: AuditableEntity<int>
 {
-    private DigitalSignDetail(): base(Guid.Empty) { }
+    private DigitalSignDetail(): base(0) { }
 
-    public Guid ValtMasterId { get; private set; }
+    public int ValtMasterId { get; private set; }
     public string? SignDateTime { get; private set; }
     public string? OriginForSign { get; private set; }
     public string? RefererForSign { get; private set; }
@@ -14,10 +14,10 @@ public sealed class DigitalSignDetail: AuditableEntity<Guid>
     public string? DocumentName { get; private set; }
     public string? DocumnetType { get; private set; }
 
-    public DigitalSignDetail(Guid id): base(Guid.NewGuid()) { }
+    public DigitalSignDetail(int id): base(id) { }
 
     public static DigitalSignDetail Create(
-        Guid publicUserDataID,
+        int publicUserDataID,
         string signDateTime,
         string? originForSign,
         string? refererForSign,

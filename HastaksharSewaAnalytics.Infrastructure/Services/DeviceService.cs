@@ -30,12 +30,12 @@ public sealed class DeviceService : IDeviceService
                 string.IsNullOrWhiteSpace(request.DeviceKey))
                 return null;
 
-            var repo = _unitOfWork.Repository<Device, Guid>();
+            var repo = _unitOfWork.Repository<Device, int>();
 
             var deviceId = request.DeviceId.Trim();
             var deviceKey = request.DeviceKey.Trim();
 
-            Guid id;
+            int id;
 
             
             try
@@ -47,12 +47,12 @@ public sealed class DeviceService : IDeviceService
             }
             catch
             {
-                id = Guid.Empty;
+                id = 0;
             }
 
             Device? device = null;
 
-            if (id == Guid.Empty)
+            if (id == 0)
             {
                 var (hash, salt) = _deviceKeyHasher.Hash(deviceKey);
 
@@ -101,7 +101,7 @@ public sealed class DeviceService : IDeviceService
             if (request == null || string.IsNullOrWhiteSpace(request.DeviceId))
                 return false;
 
-            var repo = _unitOfWork.Repository<Device, Guid>();
+            var repo = _unitOfWork.Repository<Device, int>();
 
             var isActive = await repo.GetScalarAsync(
                 selector: d => d.IsActive,
@@ -125,7 +125,7 @@ public sealed class DeviceService : IDeviceService
                 string.IsNullOrWhiteSpace(request.DeviceKey))
                 return false;
 
-            var repo = _unitOfWork.Repository<Device, Guid>();
+            var repo = _unitOfWork.Repository<Device, int>();
 
             // Prevent duplicates
             var existing = await repo.CountAsync(

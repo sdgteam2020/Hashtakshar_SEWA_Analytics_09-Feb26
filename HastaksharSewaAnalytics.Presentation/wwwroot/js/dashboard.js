@@ -28,8 +28,7 @@ fetch('/Dashboard/GetDigitalSignCount')
     .then(data => {
         document.querySelector('[data-count="signed"]').textContent = data.digitalSignCount;
     });
-
-// Handle Applications Modal and DataTable
+     
 $(function () {
     let appsTable = null;
 
@@ -52,7 +51,7 @@ $(function () {
                 columns: [{
                     data: null,
                     render: function (data, type, row, meta) {
-                        return meta.row + 1; // Sr. No.
+                        return meta.row + 1;  
                     }
                 },
                 { data: 'domainId' },
@@ -65,7 +64,7 @@ $(function () {
                 autoWidth: false,
                 dom: '<"row mb-2"<"col-sm-6"l><"col-sm-6"f>>t<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
                 createdRow: function (row) {
-                    row.classList.add('align-middle'); // nicer vertical rhythm
+                    row.classList.add('align-middle');  
                 }
             });
         } else {
@@ -73,8 +72,7 @@ $(function () {
         }
     });
 });
-
-// Handle Users Modal and DataTable
+ 
 $(function () {
     let usersTable = null;
     $('#kpiTodayUsers').on('click', function () {
@@ -94,7 +92,7 @@ $(function () {
                 columns: [{
                     data: null,
                     render: function (data, type, row, meta) {
-                        return meta.row + 1; // Sr. No.
+                        return meta.row + 1;  
                     }
                 },
                 { data: 'domainId' },
@@ -107,7 +105,7 @@ $(function () {
                 autoWidth: false,
                 dom: '<"row mb-2"<"col-sm-6"l><"col-sm-6"f>>t<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
                 createdRow: function (row) {
-                    row.classList.add('align-middle'); // nicer vertical rhythm
+                    row.classList.add('align-middle');  
                 }
             });
         } else {
@@ -115,14 +113,12 @@ $(function () {
         }
     });
 });
-
-// Handle Client Error Logs Modal and DataTable
+ 
 $(function () {
     let logsTable = null;
-
-    // 1) KPI click => open modal
+     
     $('#kpiClientErrorLogs').on('click', function () {
-        const el = document.getElementById('clientErrorLogsModal'); // your logs modal id
+        const el = document.getElementById('clientErrorLogsModal');  
         if (!el) return console.error('Modal not found. Render the partial first.');
 
         const existing = bootstrap.Modal.getInstance(el);
@@ -131,21 +127,20 @@ $(function () {
         const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
         modal.show();
     });
-
-    // 2) On modal shown => init datatable OR reload
+     
     $('#clientErrorLogsModal')
         .off('shown.bs.modal')
         .on('shown.bs.modal', function () {
 
             if (!logsTable) {
                 logsTable = $('#tblClientErrorLogs').DataTable({
-                    ajax: { url: '/Dashboard/getclienterrorlogsdata', type: 'GET', dataSrc: '' }, // <-- change URL if needed
+                    ajax: { url: '/Dashboard/getclienterrorlogsdata', type: 'GET', dataSrc: '' },  
 
                     columns: [
                         {
                             data: null,
                             render: function (data, type, row, meta) {
-                                return meta.row + 1; // Sr. No.
+                                return meta.row + 1;  
                             }
                         },
                         { data: 'ipAddress', defaultContent: '-' },
@@ -168,7 +163,7 @@ $(function () {
                             }
                         },
                         {
-                            data: 'loggedAt', // <-- your date field name (change if needed)
+                            data: 'loggedAt',  
                             defaultContent: '-',
                             render: function (v) {
                                 if (!v) return '-';
@@ -205,8 +200,7 @@ $(function () {
                 logsTable.ajax.reload(null, false);
             }
         });
-
-    // 3) View button => open detail modal (optional)
+         
     $(document).on('click', '.view-client-log', function () {
         const el = document.getElementById('clientErrorLogDetailModal');
         if (!el) return console.error('Detail modal not found.');
@@ -224,13 +218,10 @@ $(function () {
         modal.show();
     });
 });
-
-
-// Handle Public Key Vault Modal and DataTable
+ 
 $(function () {
     let pkvTable = null;
-
-    // KPI click -> open modal
+     
     $('#kpiVault').on('click', function () {
         const el = document.getElementById('vaultMasterModal');
         if (!el) return console.error('Modal not found. Render the partial first.');
@@ -242,12 +233,11 @@ $(function () {
         modal.show();
     });
 
-    // init / reload datatable when modal shown
     $('#vaultMasterModal').off('shown.bs.modal').on('shown.bs.modal', function () {
 
         if (!pkvTable) {
             pkvTable = $('#tblVaultMaster').DataTable({
-                ajax: { url: '/Dashboard/GetVaultMasterData', type: 'GET', dataSrc: '' }, // <-- change
+                ajax: { url: '/Dashboard/GetVaultMasterData', type: 'GET', dataSrc: '' }, 
                 pageLength: 10,
                 responsive: true,
                 autoWidth: false,
@@ -274,7 +264,7 @@ $(function () {
                     },
                     { data: 'validFrom', defaultContent: '-' },
                     { data: 'validTo', defaultContent: '-' },
-                    { data: 'createdAt', defaultContent: '-' }, // your API gives dd-MM-yyyy HH:mm
+                    { data: 'createdAt', defaultContent: '-' },  
                     {
                         data: 'public_Key',
                         defaultContent: '-',
@@ -305,9 +295,8 @@ $(function () {
         } else {
             pkvTable.ajax.reload(null, false);
         }
-    });
+    }); 
 
-    // View key button -> open key modal
     $(document).on('click', '.pkv-view', function () {
         const key = decodeURIComponent($(this).attr('data-key') || '');
         $('#pkv_keyText').val(key || '-');
@@ -318,14 +307,12 @@ $(function () {
 
         new bootstrap.Modal(el, { backdrop: 'static', keyboard: true }).show();
     });
-
-    // Copy button
+     
     $('#btnCopyPublicKey').on('click', async function () {
         const text = $('#pkv_keyText').val() || '';
         try {
             await navigator.clipboard.writeText(text);
-        } catch {
-            // fallback
+        } catch { 
             const ta = document.getElementById('pkv_keyText');
             ta.select();
             document.execCommand('copy');
@@ -335,8 +322,7 @@ $(function () {
 
 $(function () {
     let signTable = null;
-
-    // ✅ delegated click (works even if KPI is loaded later via partial/ajax)
+     
     $(document).on('click', '#kpiDigitalSignDetails', function () {
 
         const el = document.getElementById('digitalSignDetailsModal');
@@ -344,13 +330,11 @@ $(function () {
             console.error('Modal not found. Render the partial first.');
             return;
         }
-
-        // ✅ open modal
+         
         const modal = bootstrap.Modal.getOrCreateInstance(el, { backdrop: 'static', keyboard: false });
         modal.show();
-    });
+    }); 
 
-    // ✅ init DataTable when modal opens (only once), then reload
     $(document).on('shown.bs.modal', '#digitalSignDetailsModal', function () {
 
         if (!$.fn.DataTable.isDataTable('#tblDigitalSignDetails')) {

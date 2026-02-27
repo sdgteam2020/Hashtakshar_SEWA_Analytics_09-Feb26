@@ -100,7 +100,7 @@ public sealed class AuthController : Controller
 
             if (user is null)
             {
-                var msg = "Invalid username/email or password.";
+                var msg = "Invalid username or password.";
                 if (isAjax) return BadRequest(new { message = msg });
                 TempData["ToastError"] = msg;
                 return View();
@@ -169,12 +169,12 @@ public sealed class AuthController : Controller
                 }
 
                 TempData["ToastSuccess"] = "Login successful.";
-                return Redirect(redirect);
+                return Redirect(redirect!);
             }
 
             var error = result.IsLockedOut
                 ? "Account locked due to multiple failed attempts. Try again later."
-                : "Invalid username/email or password.";
+                : "Invalid username or password.";
 
             if (isAjax) return BadRequest(new { message = error });
             TempData["ToastError"] = error;

@@ -60,9 +60,7 @@ toastr.options = {
         init.headers = init.headers || {};
          
         if (!init.headers['X-Requested-With']) init.headers['X-Requested-With'] = 'XMLHttpRequest';
-
-        // If you use antiforgery for POST via fetch, add token header here (optional)
-        // init.headers['RequestVerificationToken'] = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+         
 
         const res = await _fetch(input, init);
 

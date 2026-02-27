@@ -1,7 +1,7 @@
 ﻿using HastaksharSewaAnalytics.Domain.Premitives.AuditEntity;
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
-public sealed class ClientErrorLog : AuditableEntity<Guid>
+public sealed class ClientErrorLog : AuditableEntity<int>
 {
     public string AppName { get; private set; } = default!;
     public string? AppVersion { get; private set; }
@@ -21,9 +21,9 @@ public sealed class ClientErrorLog : AuditableEntity<Guid>
     public DateTimeOffset? ResolvedAtUtc { get; private set; }
     public string? ResolutionNote { get; private set; }
      
-    private ClientErrorLog() : base(Guid.Empty) { }
+    private ClientErrorLog() : base(0) { }
 
-    private ClientErrorLog(Guid id) : base(id) { }
+    private ClientErrorLog(int id) : base(id) { }
      
     public static ClientErrorLog Create(
         string appName,
@@ -44,7 +44,7 @@ public sealed class ClientErrorLog : AuditableEntity<Guid>
         if (string.IsNullOrWhiteSpace(errorMessage))
             throw new ArgumentException("ErrorMessage is required.", nameof(errorMessage));
 
-        var log = new ClientErrorLog(Guid.NewGuid())
+        var log = new ClientErrorLog(0)
         {
             AppName = appName.Trim(),
             AppVersion = Normalize(appVersion, 50),

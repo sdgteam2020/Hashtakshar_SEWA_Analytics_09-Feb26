@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HastaksharSewaAnalytics.Application.Dtos.Transaction;
+﻿namespace HastaksharSewaAnalytics.Application.Dtos.Transaction;
 
 public sealed record VaultSearchRequest
 {

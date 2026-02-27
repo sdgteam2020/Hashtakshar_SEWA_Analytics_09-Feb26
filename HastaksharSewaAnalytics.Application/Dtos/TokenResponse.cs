@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HastaksharSewaAnalytics.Application.Dtos;
+﻿namespace HastaksharSewaAnalytics.Application.Dtos;
 
 public sealed class TokenResponse
 {

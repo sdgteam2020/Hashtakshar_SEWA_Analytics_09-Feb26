@@ -24,7 +24,7 @@ public sealed record TransactionService : ITransactionService
         try
         {
 
-            var repository = _unitOfWork.Repository<VaultMaster, Guid>();
+            var repository = _unitOfWork.Repository<VaultMaster, int>();
             var IsExist = await repository.CountAsync(
                x=> x.SerialNo == userPublicDataRequest.SerialNo,
                ct: cancellationToken
@@ -58,7 +58,7 @@ public sealed record TransactionService : ITransactionService
         try
         {
 
-            var repository = _unitOfWork.Repository<HastaksharSewaDailyRunLog, Guid>();
+            var repository = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
             var todayStartUtc = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero);
             var tomorrowStartUtc = todayStartUtc.AddDays(1);
 
@@ -103,7 +103,7 @@ public sealed record TransactionService : ITransactionService
     {
         try
         {
-            var repository = _unitOfWork.Repository<HastaksharSewaInstallation, Guid>();
+            var repository = _unitOfWork.Repository<HastaksharSewaInstallation, int>();
             var IsExist = await repository.CountAsync(
                 x => x.DomainId == saveInstallationRquest.domainId && x.Version == saveInstallationRquest.version && x.IPAddress == saveInstallationRquest.ipAddress,
                 ct: ct
@@ -134,7 +134,7 @@ public sealed record TransactionService : ITransactionService
         term = (term ?? "").Trim();
         if (term.Length == 0) return new List<XmlDataForPublicKeyResponse>();
          
-        var repo = _unitOfWork.Repository<VaultMaster, Guid>();
+        var repo = _unitOfWork.Repository<VaultMaster, int>();
         var list = await repo.GetListAsync(
             selector: x => new XmlDataForPublicKeyResponse
             {

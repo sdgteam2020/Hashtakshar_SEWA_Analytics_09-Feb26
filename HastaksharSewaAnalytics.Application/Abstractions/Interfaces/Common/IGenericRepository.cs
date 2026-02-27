@@ -7,15 +7,18 @@ public interface IGenericRepository<TEntity, TId>
     where TEntity : Entity<TId>
     where TId : notnull
 {
-    Task<TEntity?> GetByIdAsync(TId id, CancellationToken ct = default);
-    Task AddAsync(TEntity entity, CancellationToken ct = default);
+    Task<TEntity?> GetByIdAsync(
+        TId id, 
+        CancellationToken ct = default);
+    Task AddAsync(
+        TEntity entity, 
+        CancellationToken ct = default);
     void Update(TEntity entity);
     void Remove(TEntity entity);
     IQueryable<TEntity> Query();
     Task<int> CountAsync(
         Expression<Func<TEntity, bool>>? predicate = null,
-        CancellationToken ct = default
-        );
+        CancellationToken ct = default);
     Task<List<TResult>> GetListAsync<TResult>(
           Expression<Func<TEntity, TResult>> selector,
           Expression<Func<TEntity, bool>>? predicate = null,

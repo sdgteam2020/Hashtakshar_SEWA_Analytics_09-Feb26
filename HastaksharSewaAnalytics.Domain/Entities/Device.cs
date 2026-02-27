@@ -1,13 +1,10 @@
 ﻿using HastaksharSewaAnalytics.Domain.Premitives.AuditEntity;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
-public sealed class Device : AuditableEntity<Guid>
+public sealed class Device : AuditableEntity<int>
 {
-    private Device() : base(Guid.Empty)
+    private Device() : base(0)
     {
     }
 
@@ -16,7 +13,7 @@ public sealed class Device : AuditableEntity<Guid>
     public string DeviceKeySalt { get; set; } = default!;     // base64 salt
     public bool IsActive { get; set; } = true;
 
-    private Device(Guid id) : base(id) { }
+    private Device(int id) : base(id) { }
 
     public static Device Create(
         string deviceId,
@@ -29,7 +26,7 @@ public sealed class Device : AuditableEntity<Guid>
             throw new ArgumentException("DeviceKeyHash is required.", nameof(deviceKeyHash));
         if (string.IsNullOrWhiteSpace(deviceKeySalt))
             throw new ArgumentException("DeviceKeySalt is required.", nameof(deviceKeySalt));
-        var device = new Device(Guid.NewGuid())
+        var device = new Device(0)
         {
             DeviceId = deviceId.Trim(),
             DeviceKeyHash = deviceKeyHash.Trim(),

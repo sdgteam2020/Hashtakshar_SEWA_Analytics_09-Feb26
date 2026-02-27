@@ -2,10 +2,10 @@
 using System.ComponentModel.DataAnnotations;
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
-public sealed class VaultMaster : AuditableEntity<Guid>
+public sealed class VaultMaster : AuditableEntity<int>
 {
     private VaultMaster(
-        Guid id,      
+        int id,      
         string publicKey,
         string serialNo,
         bool tokenValid,
@@ -19,7 +19,7 @@ public sealed class VaultMaster : AuditableEntity<Guid>
         SetValidFrom(validFrom);
         SetValidTo(validTo);
     } 
-    private VaultMaster() : base(Guid.Empty) { }
+    private VaultMaster() : base(0) { }
 
     [Required]
     public string Public_Key { get; private set; } = "";
@@ -45,7 +45,7 @@ public sealed class VaultMaster : AuditableEntity<Guid>
     )
     {
         var entity = new VaultMaster(
-            Guid.NewGuid(),
+            id: 0,
             publicKey,
             serialNo,
             tokenValid,

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HastaksharSewaAnalytics.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAllTables : Migration
+    public partial class AddInitialTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -58,7 +58,8 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
                 name: "ClientErrorLogs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     AppName = table.Column<string>(type: "text", nullable: false),
                     AppVersion = table.Column<string>(type: "text", nullable: true),
                     IpAddress = table.Column<string>(type: "text", nullable: true),
@@ -87,7 +88,8 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
                 name: "Devices",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     DeviceId = table.Column<string>(type: "text", nullable: false),
                     DeviceKeyHash = table.Column<string>(type: "text", nullable: false),
                     DeviceKeySalt = table.Column<string>(type: "text", nullable: false),
@@ -106,7 +108,8 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
                 name: "HastaksharSewaDailyRunLogs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     DomainId = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     IPAddress = table.Column<string>(type: "text", nullable: false),
                     Version = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
@@ -125,7 +128,8 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
                 name: "HastaksharSewaInstallations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     DomainId = table.Column<string>(type: "text", nullable: false),
                     IPAddress = table.Column<string>(type: "text", nullable: false),
                     Version = table.Column<string>(type: "text", nullable: false),
@@ -144,7 +148,8 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
                 name: "VaultMasters",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Public_Key = table.Column<string>(type: "text", nullable: false),
                     SerialNo = table.Column<string>(type: "text", nullable: false),
                     TokenValid = table.Column<bool>(type: "boolean", nullable: false),
@@ -270,8 +275,9 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
                 name: "DigitalSignDetails",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ValtMasterId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ValtMasterId = table.Column<int>(type: "integer", nullable: false),
                     SignDateTime = table.Column<string>(type: "text", nullable: true),
                     OriginForSign = table.Column<string>(type: "text", nullable: true),
                     RefererForSign = table.Column<string>(type: "text", nullable: true),

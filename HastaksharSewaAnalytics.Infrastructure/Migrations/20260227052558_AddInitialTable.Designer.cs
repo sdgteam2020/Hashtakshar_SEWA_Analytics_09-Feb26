@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HastaksharSewaAnalytics.Infrastructure.Migrations
 {
     [DbContext(typeof(HastaksharSewaAnalyticsDbContext))]
-    [Migration("20260213120259_AddAllTables")]
-    partial class AddAllTables
+    [Migration("20260227052558_AddInitialTable")]
+    partial class AddInitialTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,9 +27,11 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
 
             modelBuilder.Entity("HastaksharSewaAnalytics.Domain.Entities.ClientErrorLog", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AppName")
                         .IsRequired()
@@ -95,9 +97,11 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
 
             modelBuilder.Entity("HastaksharSewaAnalytics.Domain.Entities.Device", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -135,9 +139,11 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
 
             modelBuilder.Entity("HastaksharSewaAnalytics.Domain.Entities.DigitalSignDetail", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -171,8 +177,8 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
                     b.Property<string>("SignDateTime")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ValtMasterId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("ValtMasterId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -183,9 +189,11 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
 
             modelBuilder.Entity("HastaksharSewaAnalytics.Domain.Entities.HastaksharSewaDailyRunLog", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -225,9 +233,11 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
 
             modelBuilder.Entity("HastaksharSewaAnalytics.Domain.Entities.HastaksharSewaInstallation", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -265,9 +275,11 @@ namespace HastaksharSewaAnalytics.Infrastructure.Migrations
 
             modelBuilder.Entity("HastaksharSewaAnalytics.Domain.Entities.VaultMaster", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
