@@ -18,6 +18,7 @@ public sealed class DeviceAuthController : ControllerBase
     }
      
     [HttpPost("token"), AllowAnonymous]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Token([FromBody] DeviceRequest request, CancellationToken ct)
     {
         try

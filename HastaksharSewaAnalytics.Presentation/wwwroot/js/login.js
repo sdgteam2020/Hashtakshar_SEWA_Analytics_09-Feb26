@@ -2,9 +2,24 @@
 
 const usernameInput = document.getElementById("loginUsername");
 
-usernameInput.addEventListener("input", function () {
-    // Allow: letters, numbers, dot, underscore, @, hyphen
-    const allowed = /[^a-zA-Z0-9._@-]/g;
+function bindToggle(btnId, inputId) {
+    const btn = document.getElementById(btnId);
+    const input = document.getElementById(inputId);
+    if (!btn || !input) return;
+
+    btn.addEventListener("click", function () {
+        const isPwd = input.type === "password";
+        input.type = isPwd ? "text" : "password";
+
+        const icon = btn.querySelector("i");
+        if (icon) icon.className = isPwd ? "bi bi-eye-slash" : "bi bi-eye";
+    });
+}
+
+bindToggle("togglePasswordBtn", "loginPassword");
+
+usernameInput.addEventListener("input", function () { 
+    const allowed = /[^a-zA-Z0-9_]/g;
 
     if (allowed.test(this.value)) {
         this.value = this.value.replace(allowed, "");
@@ -20,19 +35,15 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     const username = document.getElementById("loginUsername").value;
     const password = document.getElementById("loginPassword").value;
-
-    // Encrypt
+     
     const encryptedUsername = encryptData(username);
     const encryptedPassword = encryptData(password);
-
-    // Build FormData FROM the form (so it includes __RequestVerificationToken)
+     
     const formData = new FormData(form);
-
-    // Overwrite fields with encrypted values
+     
     formData.set("Username", encryptedUsername);
     formData.set("Password", encryptedPassword);
-
-    // Read anti-forgery token value
+     
     const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
 
     try {
@@ -48,16 +59,14 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         });
 
         const contentType = res.headers.get("content-type") || "";
-
-        // Expect JSON (your controller returns JSON for AJAX)
+         
         const data = contentType.includes("application/json") ? await res.json() : null;
 
         if (!res.ok) {
             toastr.error(data?.message || "Login failed.");
             return;
         }
-
-        // success
+         
         toastr.success(data?.message || "Login successful.");
 
         setTimeout(() => {

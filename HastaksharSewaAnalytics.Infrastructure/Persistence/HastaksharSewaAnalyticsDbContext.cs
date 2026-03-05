@@ -24,6 +24,12 @@ public sealed class HastaksharSewaAnalyticsDbContext
     {
         base.OnModelCreating(builder);
 
+        builder.Entity<ApplicationUser>(b =>
+        {
+            b.Property(u => u.UserName).HasMaxLength(15);            
+            b.Property(u => u.NormalizedUserName).HasMaxLength(15); 
+        });
+
         builder.Entity<DigitalSignDetail>()
             .HasOne<VaultMaster>()
             .WithMany()

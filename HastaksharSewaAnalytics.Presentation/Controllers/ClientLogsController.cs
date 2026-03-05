@@ -22,6 +22,7 @@ public class ClientLogsController : Controller
 
     [Authorize(Policy = "DeviceOnly")]
     [HttpPost("api/ClientLogs/SaveClientLogs")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> SaveClientLogs([FromBody]ClientErrorLogRequest clientErrorLogRequest, CancellationToken cancellationToken)
     {
         try

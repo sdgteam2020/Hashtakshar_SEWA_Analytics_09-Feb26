@@ -19,15 +19,37 @@
      
     const regUsernameInput = document.querySelector('input[name="Username"]');
 
-    if (regUsernameInput) {
-        regUsernameInput.addEventListener("input", function () { 
-            const allowed = /[^a-zA-Z0-9._-]/g;
+    let lastToastAt = 0;
+    function toastOnce(msg) {
+        if (!window.toastr) return;
+        const now = Date.now();
+        if (now - lastToastAt < 1200) return;  
+        lastToastAt = now;
+        toastr.warning(msg);
+    }
 
-            if (allowed.test(this.value)) {
-                this.value = this.value.replace(allowed, "");
-                if (window.toastr) {
-                    toastr.warning("Special characters are not allowed in username.");
-                }
+    if (regUsernameInput) {
+        regUsernameInput.addEventListener("input", function () {
+            const raw = this.value;
+            const cleaned = raw.replace(/[^a-zA-Z0-9._-]/g, "");
+
+            if (raw !== cleaned) {
+                this.value = cleaned;
+                toastOnce("Only letters, numbers and . _ - are allowed in username.");
+                return;
+            }
+             
+            const min = 4, max = 30;
+
+            if (cleaned.length > max) {
+                this.value = cleaned.slice(0, max);
+                toastOnce(`Username can't be more than ${max} characters.`);
+                return;
+            }
+
+            if (cleaned.length > 0 && cleaned.length < min) {
+                 
+                toastOnce(`Username must be at least ${min} characters.`);
             }
         });
     }

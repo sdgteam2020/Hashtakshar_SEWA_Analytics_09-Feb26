@@ -21,6 +21,7 @@ public class DigitalSignController : Controller
 
     [Authorize(Policy = "DeviceOnly")]
     [HttpPost("SaveDigitalSign")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> SaveDigitalSign([FromBody] SaveDigitalSignRequest saveDigitalSignRequest, CancellationToken cancellationToken)
     {
         try
