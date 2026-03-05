@@ -14,16 +14,17 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
- 
+
 builder.Services.AddControllersWithViews();
- 
+
 builder.Services.AddDbContext<HastaksharSewaAnalyticsDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
- 
+
 builder.Services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
@@ -33,7 +34,7 @@ builder.Services.AddScoped<IDigitalSignService, DigitalSignService>();
 builder.Services.AddScoped<IDeviceKeyHasher, DeviceKeyHasher>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
- 
+
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
@@ -43,12 +44,12 @@ builder.Services
     })
     .AddEntityFrameworkStores<HastaksharSewaAnalyticsDbContext>()
     .AddDefaultTokenProviders();
- 
+
 builder.Services.Configure<SecurityStampValidatorOptions>(o =>
 {
     o.ValidationInterval = TimeSpan.Zero;
 });
- 
+
 var key = builder.Configuration["Jwt:Key"]!;
 var issuer = builder.Configuration["Jwt:Issuer"]!;
 var audience = builder.Configuration["Jwt:Audience"]!;
@@ -72,7 +73,7 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.FromMinutes(2)
     };
 });
- 
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("DeviceOnly", p =>
@@ -102,7 +103,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Auth/Login";
 
     options.Events = new CookieAuthenticationEvents
-    { 
+    {
         OnValidatePrincipal = async context =>
         {
             var userManager = context.HttpContext.RequestServices
@@ -120,12 +121,12 @@ builder.Services.ConfigureApplicationCookie(options =>
 
             var user = await userManager.FindByIdAsync(userId);
             if (user == null || string.IsNullOrWhiteSpace(user.ActiveSessionId) || user.ActiveSessionId != claimSessionId)
-            { 
+            {
                 context.RejectPrincipal();
                 await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
             }
         },
-         
+
         OnRedirectToLogin = ctx =>
         {
             if (ctx.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -165,12 +166,11 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd", policy =>
     {
-        policy.WithOrigins("https://localhost:7018") 
+        policy.WithOrigins("https://localhost:7018", "https://192.168.10.41","https://192.168.10.251")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -179,29 +179,58 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHsts(options =>
 {
-    options.Preload = true;                 
-    options.IncludeSubDomains = true;       
+    options.Preload = true;
+    options.IncludeSubDomains = true;
     options.MaxAge = TimeSpan.FromDays(365);
 });
 
+ 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedProto |
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedHost;
+     
+    options.KnownProxies.Add(IPAddress.Loopback);
+    options.KnownProxies.Add(IPAddress.IPv6Loopback);
+
+    options.ForwardLimit = 1;
+    options.RequireHeaderSymmetry = true;
 });
 
 ErrorLog.Env = builder.Environment;
 
 var app = builder.Build();
-
-
+ 
 app.UseForwardedHeaders();
+
+ 
+var allowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+{
+    "192.168.10.41",
+    "192.168.10.251",
+    "localhost"     
+};
+
+app.Use(async (ctx, next) =>
+{
+    var host = ctx.Request.Host.Host; 
+    if (!allowedHosts.Contains(host))
+    {
+        ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await ctx.Response.WriteAsync("Invalid Host header.");
+        return;
+    }
+    await next();
+});
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
+ 
 app.Use(async (ctx, next) =>
 {
     ctx.Response.Headers["X-Frame-Options"] = "DENY";
@@ -210,8 +239,6 @@ app.Use(async (ctx, next) =>
 });
 
 app.UseHttpsRedirection();
-
-
 app.UseStaticFiles();
 
 app.UseRouting();

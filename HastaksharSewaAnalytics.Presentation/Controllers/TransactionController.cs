@@ -19,6 +19,7 @@ public class TransactionController : Controller
     [HttpPost]
     [Authorize(Policy = "DeviceOnly")]
     [Route("api/transaction/SaveUserData")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> SaveVaultMasterData(SaveUserPublicDataRequest obj)
     {
         try
@@ -40,6 +41,7 @@ public class TransactionController : Controller
 
     [Authorize(Policy = "DeviceOnly")]
     [HttpPost("api/transaction/SaveInstallationAsync")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> SaveInstallationAsync(SaveInstallationRquest obj)
     {
         try
@@ -61,6 +63,7 @@ public class TransactionController : Controller
 
     [Authorize(Policy = "DeviceOnly")]
     [HttpPost("api/transaction/SaveDailyRunAsync")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> SaveDailyRunAsync(SaveDailyRunRequest obj)
     {
         try
@@ -81,6 +84,7 @@ public class TransactionController : Controller
     }
     [Authorize(Policy = "DeviceOnly")]
     [HttpPost("api/transaction/search")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Search([FromBody] VaultSearchRequest req, CancellationToken ct)
     {
         try

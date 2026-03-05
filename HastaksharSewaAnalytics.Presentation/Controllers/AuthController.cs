@@ -87,7 +87,7 @@ public sealed class AuthController : Controller
             username = AESEncrytDecry.DecryptAES(username.Trim(), salt);
             password = AESEncrytDecry.DecryptAES(password.Trim(), salt);
 
-            if (!Regex.IsMatch(username, @"^[a-zA-Z0-9._@-]+$"))
+            if (!Regex.IsMatch(username, @"^[a-zA-Z0-9_]+$"))
             {
                 var msg = "Username contains invalid characters.";
                 if (isAjax) return BadRequest(new { message = msg });
