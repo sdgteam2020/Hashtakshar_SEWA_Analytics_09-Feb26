@@ -12,6 +12,21 @@ toastr.options = {
     timeOut: 3000
 };
 
+$(function () {
+    var el = document.getElementById("toastData");
+    if (!el) return;
+
+    var success = el.getAttribute("data-success");
+    var error = el.getAttribute("data-error");
+    var warning = el.getAttribute("data-warning");
+    var info = el.getAttribute("data-info");
+
+    if (success) toastr.success(success);
+    if (error) toastr.error(error);
+    if (warning) toastr.warning(warning);
+    if (info) toastr.info(info);
+});
+
 (function () {
     let shown = false;
 

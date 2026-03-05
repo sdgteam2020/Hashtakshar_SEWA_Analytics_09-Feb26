@@ -270,7 +270,7 @@ $(function () {
                         defaultContent: '-',
                         render: function (v) {
                             if (!v) return '-';
-                            return `<span class="text-truncate d-inline-block" style="max-width:220px;">${v}</span>`;
+                            return `<span class="text-truncate d-inline-block publicKeyStatus">${v}</span>`;
                         }
                     },
                     {

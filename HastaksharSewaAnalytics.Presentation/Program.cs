@@ -199,13 +199,24 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.RequireHeaderSymmetry = true;
 });
 
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.Secure = CookieSecurePolicy.Always;
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;
+    options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
+});
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false;
+});
 ErrorLog.Env = builder.Environment;
 
 var app = builder.Build();
  
 app.UseForwardedHeaders();
+app.UseCookiePolicy();
 
- 
+
 var allowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 {
     "192.168.10.41",
@@ -230,11 +241,23 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
- 
+
 app.Use(async (ctx, next) =>
 {
     ctx.Response.Headers["X-Frame-Options"] = "DENY";
-    ctx.Response.Headers["Content-Security-Policy"] = "frame-ancestors 'none';";
+
+    ctx.Response.Headers["Content-Security-Policy"] =
+        "default-src 'self'; " +
+        "script-src 'self'; " +
+        "style-src 'self'; " +
+        "img-src 'self' data:; " +
+        "font-src 'self' data:; " +
+        "connect-src 'self'; " +
+        "frame-ancestors 'none'; " +
+        "form-action 'self'; " +
+        "base-uri 'self'; " +
+        "object-src 'none';";
+
     await next();
 });
 

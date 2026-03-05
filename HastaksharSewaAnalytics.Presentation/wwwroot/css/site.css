@@ -725,3 +725,12 @@ main {
 #toast-container.toast-top-center {
     top: 80px;
 }
+
+#ced_stackTrace, #ced_extra {
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+.publicKeyStatus {
+    max-width:220px;
+}

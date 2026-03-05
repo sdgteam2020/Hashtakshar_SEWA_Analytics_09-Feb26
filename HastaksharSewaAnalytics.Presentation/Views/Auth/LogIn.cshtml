@@ -81,20 +81,9 @@
 
     </div>
 </div>
+<div id="authReason" data-reason="@Context.Request.Query["reason"]" class="d-none"></div>
 
 @section Scripts {
     <script asp-src-include="~/lib/crypto-js/crypto-js.min.js"></script>
-    <script src="~/js/login.js" asp-append-version="true"></script>
-    <script>
-        (function () {
-          const reason = "@Context.Request.Query["reason"]";
-
-          if (reason === "auth") {
-            toastr.warning("Please login to continue.");
-          }
-          if (reason === "denied") {
-            toastr.error("Access denied.");
-          }
-        })();
-    </script>
+    <script src="~/js/login.js" asp-append-version="true"></script>    
 }

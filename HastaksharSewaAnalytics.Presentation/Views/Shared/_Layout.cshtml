@@ -98,27 +98,12 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
    
     @await RenderSectionAsync("Scripts", required: false)
-
-    <script>
-        $(function () {          
-                      @if (TempData["ToastSuccess"] != null)
-                      {
-                              <text>toastr.success("@TempData["ToastSuccess"]");</text>
-                      }
-                      @if (TempData["ToastError"] != null)
-                      {
-                              <text>toastr.error("@TempData["ToastError"]");</text>
-                      }
-                      @if (TempData["ToastWarning"] != null)
-                      {
-                              <text>toastr.warning("@TempData["ToastWarning"]");</text>
-                      }
-                      @if (TempData["ToastInfo"] != null)
-                      {
-                              <text>toastr.info("@TempData["ToastInfo"]");</text>
-                      }
-                    });
-    </script>
+    <div id="toastData"
+         data-success="@TempData["ToastSuccess"]"
+         data-error="@TempData["ToastError"]"
+         data-warning="@TempData["ToastWarning"]"
+         data-info="@TempData["ToastInfo"]"
+         class="d-none"></div>   
 
 </body>
 </html>

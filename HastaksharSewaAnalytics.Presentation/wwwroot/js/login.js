@@ -2,6 +2,19 @@
 
 const usernameInput = document.getElementById("loginUsername");
 
+$(function () {
+    var el = document.getElementById("authReason");
+    if (!el) return;
+
+    var reason = el.getAttribute("data-reason") || "";
+
+    if (reason === "auth") {
+        toastr.warning("Please login to continue.");
+    } else if (reason === "denied") {
+        toastr.error("Access denied.");
+    }
+});
+
 function bindToggle(btnId, inputId) {
     const btn = document.getElementById(btnId);
     const input = document.getElementById(inputId);
