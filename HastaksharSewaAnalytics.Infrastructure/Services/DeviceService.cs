@@ -42,7 +42,7 @@ public sealed class DeviceService : IDeviceService
             {
                 id = await repo.GetScalarAsync(
                     selector: d => d.Id,
-                    predicate: d => d.DeviceId == deviceId,
+                    predicate: d => d.DeviceId == deviceId, 
                     cancellationToken: cancellationToken);
             }
             catch

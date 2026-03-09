@@ -40,58 +40,53 @@ public sealed record DigitalSignService : IDigitalSignService
         return data;
     }
 
-    public async Task<bool> SaveDigitalSign(SaveDigitalSignRequest saveDigitalSignRequest, CancellationToken cancellationToken = default)
+    public async Task<bool> SaveDigitalSign(SaveDigitalSignRequest request, CancellationToken cancellationToken = default)
     {
-        if (saveDigitalSignRequest == null) throw new ArgumentNullException(nameof(saveDigitalSignRequest));
+        ArgumentNullException.ThrowIfNull(request);
+
+        var userDataRepo = _UoW.Repository<VaultMaster, int>();
+        var digitalSignRepo = _UoW.Repository<DigitalSignDetail, int>();
+
         try
         {
-            var userDataRepo = _UoW.Repository<VaultMaster, int>();
-            var digitalSignRepo = _UoW.Repository<DigitalSignDetail, int>();
-            int existingCount = await userDataRepo
-                                            .CountAsync(
-                                                predicate: p => p.SerialNo
-                                                .Equals(saveDigitalSignRequest.SerialNo),
-                                                cancellationToken);
-            int PublicUserDataId = 0;
-            if (existingCount <= 0)
+            int publicUserDataId = await userDataRepo.GetScalarAsync(
+                selector: s => s.Id,
+                predicate: p => p.SerialNo == request.SerialNo
+            );
+
+            if (publicUserDataId <= 0)
             {
                 var userEntity = VaultMaster.Create(
-                                 saveDigitalSignRequest.PublicKey,
-                                 saveDigitalSignRequest.SerialNo,
-                                 saveDigitalSignRequest.TokenValid,
-                                 saveDigitalSignRequest.ValidFrom,
-                                 saveDigitalSignRequest.ValidTo
-                                 );
+                    request.PublicKey,
+                    request.SerialNo,
+                    request.TokenValid,
+                    request.ValidFrom,
+                    request.ValidTo
+                );
 
                 await userDataRepo.AddAsync(userEntity, cancellationToken);
-                PublicUserDataId = userEntity.Id;
-            }
-            else
-            {
-                PublicUserDataId = await userDataRepo
-                    .GetScalarAsync(
-                    selector: s => s.Id,
-                    predicate: p => p.SerialNo
-                    .Equals(saveDigitalSignRequest.SerialNo)
-                    );
+                await _UoW.SaveChangesAsync(cancellationToken);
+
+                publicUserDataId = userEntity.Id;
             }
 
             var entity = DigitalSignDetail.Create(
-                         PublicUserDataId,
-                         saveDigitalSignRequest.SignedDateTime,
-                         saveDigitalSignRequest.OriginForSign,
-                         saveDigitalSignRequest.RefererForSign,
-                         saveDigitalSignRequest.IpAddress,
-                         saveDigitalSignRequest.DocumentName,
-                         saveDigitalSignRequest.DocumnetType
-                         );
+                publicUserDataId,
+                request.SignedDateTime,
+                request.OriginForSign,
+                request.RefererForSign,
+                request.IpAddress,
+                request.DocumentName,
+                request.DocumnetType
+            );
 
             await digitalSignRepo.AddAsync(entity, cancellationToken);
-            int isSave = await _UoW.SaveChangesAsync(cancellationToken);
-            return isSave > 0;
+
+            int rows = await _UoW.SaveChangesAsync(cancellationToken);
+            return rows > 0;
         }
-        catch (Exception)
-        { 
+        catch
+        {
             throw;
         }
     }
