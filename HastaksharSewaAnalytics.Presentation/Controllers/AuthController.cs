@@ -106,7 +106,7 @@ public sealed class AuthController : Controller
                 return View();
             }
 
-               
+
             await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
 
             await _signInManager.SignOutAsync();
@@ -132,7 +132,7 @@ public sealed class AuthController : Controller
                 user.ActiveSessionId = newSessionId;
                 user.ActiveSessionIssuedUtc = DateTime.UtcNow;
                 await _userManager.UpdateAsync(user);
-              
+
                 await _signInManager.SignOutAsync();
                 await _signInManager.SignInWithClaimsAsync(
                     user,
@@ -211,11 +211,11 @@ public sealed class AuthController : Controller
             var user = await _userManager.GetUserAsync(User);
 
             if (user != null)
-            { 
+            {
                 user.ActiveSessionId = null;
                 user.ActiveSessionIssuedUtc = null;
                 await _userManager.UpdateAsync(user);
-                 
+
                 await _userManager.UpdateSecurityStampAsync(user);
             }
 
@@ -250,11 +250,19 @@ public sealed class AuthController : Controller
 
 
     [HttpGet, AllowAnonymous]
-    public IActionResult Register() => View(new RegisterVm());
+    public IActionResult Register()
+    {
+        string dd = AESEncrytDecry.GetSalt();
+        HttpContext.Session.SetString(SessionKeySalt, dd);
+        ViewBag.hdns = dd;
+        return View(new RegisterVm());
+    }
 
     [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(RegisterVm model)
+    public async Task<IActionResult> Register([FromForm]RegisterVm model)
     {
+        bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+                      || (Request.Headers["Accept"].ToString()?.Contains("application/json") ?? false);
         try
         {
             if (!ModelState.IsValid) return View(model);
@@ -264,7 +272,11 @@ public sealed class AuthController : Controller
                 ModelState.AddModelError("Username", "Username contains invalid characters.");
                 return View(model);
             }
-
+            if(model.Password != model.ConfirmPassword)
+            {
+                ModelState.AddModelError("Password", "Password NotMatch with Confirm Password");
+                return View(model);
+            }
 
             var user = new ApplicationUser
             {

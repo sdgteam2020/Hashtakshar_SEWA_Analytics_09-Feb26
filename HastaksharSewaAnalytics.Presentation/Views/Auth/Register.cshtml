@@ -26,8 +26,7 @@
 
             <form asp-controller="Auth" asp-action="Register" method="post" novalidate>
                 @Html.AntiForgeryToken()
-
-                <!-- Show validation summary -->
+                 
                 @if (!ViewData.ModelState.IsValid)
                 {
                     <div class="alert alert-danger py-2">
@@ -37,6 +36,7 @@
                 }
 
                 <div class="mb-3">
+                    <span id="spnhdns" class="d-none">@ViewBag.hdns</span>
                     <label class="form-label text-muted">Username</label>
                     <input class="form-control register-pill"
                            name="Username"
@@ -78,8 +78,7 @@
                         Use at least 8 characters with a number and an uppercase letter.
                     </div>
                 </div>
-
-                <!-- Confirm Password -->
+                 
                 <div class="mb-3">
                     <label class="form-label text-muted">Confirm Password</label>
 
@@ -103,16 +102,14 @@
                         @Html.ValidationMessage("ConfirmPassword")
                     </div>
                 </div>
-
-                <!-- Submit -->
+                 
                 <div class="d-grid mt-3">
                     <button type="submit" class="btn btn-olive-outline py-2">
                         <i class="bi bi-person-check me-1"></i>
                         Create Account
                     </button>
                 </div>
-
-                <!-- Back to login -->
+                 
                 <div class="text-center mt-3">
                     <a asp-controller="Auth" asp-action="Login" class="small">
                         Already have an account? Sign in
