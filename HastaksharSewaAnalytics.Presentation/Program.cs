@@ -22,8 +22,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+
+var conn = builder.Configuration.GetConnectionString("HastakharSewaAnalytics");
+
+if (string.IsNullOrWhiteSpace(conn))
+{
+    throw new InvalidOperationException("Connection string 'HastakharSewaAnalytics' not found.");
+}
+
 builder.Services.AddDbContext<HastaksharSewaAnalyticsDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+    options.UseNpgsql(conn));
 
 builder.Services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
