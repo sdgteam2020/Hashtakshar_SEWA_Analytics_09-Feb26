@@ -5,41 +5,77 @@ namespace HastaksharSewaAnalytics.Presentation.Helpers;
 
 public static class AESEncrytDecry
 {
-    private static Random random = new Random();
     public static string GetSalt()
     {
-        var builder = new StringBuilder();
-        while (builder.Length < 16)
-        {
-            builder.Append(random.Next(10).ToString());
-        }
-        return builder.ToString();
+        byte[] saltBytes = RandomNumberGenerator.GetBytes(16);
+        return Convert.ToBase64String(saltBytes);
     }
+
     public static string GetKey()
-    {
-        var builder = new StringBuilder();
-        while (builder.Length < 16)
-        {
-            builder.Append(random.Next(10).ToString());
-        }
-        return builder.ToString();
+    {        
+        byte[] keyBytes = RandomNumberGenerator.GetBytes(16);
+        return Encoding.UTF8.GetString(ToNumeric16Bytes(keyBytes));
     }
 
-    public static string DecryptAES(string cipherText, string? key)
+    private static byte[] ToNumeric16Bytes(byte[] input)
     {
-        var iv = Encoding.UTF8.GetBytes(key.Substring(0, 16));
-        var keyBytes = Encoding.UTF8.GetBytes(key);
+        byte[] result = new byte[16];
+        for (int i = 0; i < 16; i++)
+        {
+            result[i] = (byte)('0' + (input[i] % 10));
+        }
+        return result;
+    }
 
-        var buffer = Convert.FromBase64String(cipherText);
+    public static string DecryptAES(string cipherText, string key)
+    {
+        if (string.IsNullOrWhiteSpace(cipherText))
+            throw new ArgumentNullException(nameof(cipherText));
 
-        using Aes aes = Aes.Create();
-        aes.Mode = CipherMode.CBC;
-        aes.Padding = PaddingMode.PKCS7;
-        aes.Key = keyBytes;
-        aes.IV = iv;
+        if (string.IsNullOrWhiteSpace(key))
+            throw new ArgumentNullException(nameof(key));
 
-        using var decryptor = aes.CreateDecryptor();
-        var result = decryptor.TransformFinalBlock(buffer, 0, buffer.Length);
-        return Encoding.UTF8.GetString(result);
+        byte[] buffer;
+        try
+        {
+            buffer = Convert.FromBase64String(cipherText);
+        }
+        catch (FormatException ex)
+        {
+            throw new ArgumentException("Cipher text is not valid Base64.", nameof(cipherText), ex);
+        }
+
+        byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+
+        if (keyBytes.Length < 16)
+            throw new ArgumentException("Key must be at least 16 characters long.", nameof(key));
+
+        if (keyBytes.Length != 16 && keyBytes.Length != 24 && keyBytes.Length != 32)
+        {
+             
+            Array.Resize(ref keyBytes, 16);
+        }
+
+        byte[] iv = new byte[16];
+        Array.Copy(keyBytes, 0, iv, 0, 16);
+
+        try
+        {
+            using Aes aes = Aes.Create();
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            aes.Key = keyBytes;
+            aes.IV = iv;
+
+            using ICryptoTransform decryptor = aes.CreateDecryptor();
+            byte[] result = decryptor.TransformFinalBlock(buffer, 0, buffer.Length);
+            return Encoding.UTF8.GetString(result);
+        }
+        catch (CryptographicException ex)
+        {
+            throw new CryptographicException(
+                "AES decryption failed. Most likely the key/IV does not match the ciphertext, or frontend and backend encryption settings are different.",
+                ex);
+        }
     }
 }
