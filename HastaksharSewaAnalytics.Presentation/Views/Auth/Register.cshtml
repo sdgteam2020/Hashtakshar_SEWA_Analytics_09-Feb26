@@ -24,9 +24,9 @@
 
             <hr class="border-secondary opacity-25" />
 
-            <form asp-controller="Auth" asp-action="Register" method="post" novalidate>
+            <form id="registerForm" asp-controller="Auth" asp-action="Register" method="post" novalidate>
                 @Html.AntiForgeryToken()
-                 
+
                 @if (!ViewData.ModelState.IsValid)
                 {
                     <div class="alert alert-danger py-2">
@@ -37,16 +37,18 @@
 
                 <div class="mb-3">
                     <span id="spnhdns" class="d-none">@ViewBag.hdns</span>
+
                     <label class="form-label text-muted">Username</label>
                     <input class="form-control register-pill"
+                           id="regUsername"
                            name="Username"
                            value="@Model?.Username"
                            placeholder="Enter username"
-                           autocomplete="username"
+                           autocomplete="off"
                            pattern="[a-zA-Z0-9._-]+"
                            title="Only letters, numbers, dot (.), underscore (_) and hyphen (-) are allowed"
                            required />
-                    <div class="text-danger small mt-1">
+                    <div class="text-danger small mt-1" id="usernameError">
                         @Html.ValidationMessage("Username")
                     </div>
                 </div>
@@ -70,7 +72,7 @@
                         </button>
                     </div>
 
-                    <div class="text-danger small mt-1">
+                    <div class="text-danger small mt-1" id="passwordError">
                         @Html.ValidationMessage("Password")
                     </div>
 
@@ -78,7 +80,7 @@
                         Use at least 8 characters with a number and an uppercase letter.
                     </div>
                 </div>
-                 
+
                 <div class="mb-3">
                     <label class="form-label text-muted">Confirm Password</label>
 
@@ -98,18 +100,18 @@
                         </button>
                     </div>
 
-                    <div class="text-danger small mt-1">
+                    <div class="text-danger small mt-1" id="confirmPasswordError">
                         @Html.ValidationMessage("ConfirmPassword")
                     </div>
                 </div>
-                 
+
                 <div class="d-grid mt-3">
                     <button type="submit" class="btn btn-olive-outline py-2">
                         <i class="bi bi-person-check me-1"></i>
                         Create Account
                     </button>
                 </div>
-                 
+
                 <div class="text-center mt-3">
                     <a asp-controller="Auth" asp-action="Login" class="small">
                         Already have an account? Sign in
@@ -127,5 +129,6 @@
 </div>
 
 @section Scripts {
+    <script asp-src-include="~/lib/crypto-js/crypto-js.min.js"></script>
     <script src="~/js/register.js" asp-append-version="true"></script>
 }

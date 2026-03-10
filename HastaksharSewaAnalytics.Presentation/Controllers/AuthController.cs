@@ -259,23 +259,84 @@ public sealed class AuthController : Controller
     }
 
     [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register([FromForm]RegisterVm model)
+    [Consumes("multipart/form-data", "application/x-www-form-urlencoded")]
+    public async Task<IActionResult> Register([FromForm] RegisterEncryptedVm encryptedModel)
     {
         bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest"
                       || (Request.Headers["Accept"].ToString()?.Contains("application/json") ?? false);
+
         try
         {
-            if (!ModelState.IsValid) return View(model);
+            if (Request.Query.ContainsKey("username") || Request.Query.ContainsKey("password") ||
+                Request.Query.ContainsKey("confirmPassword") || Request.Query.ContainsKey("Username") ||
+                Request.Query.ContainsKey("Password") || Request.Query.ContainsKey("ConfirmPassword"))
+            {
+                var msg = "Do not send credentials in query string.";
+                if (isAjax) return BadRequest(new { message = msg });
+                TempData["ToastError"] = msg;
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(encryptedModel.Username) ||
+                string.IsNullOrWhiteSpace(encryptedModel.Password) ||
+                string.IsNullOrWhiteSpace(encryptedModel.ConfirmPassword))
+            {
+                var msg = "Username, Password and Confirm Password are required.";
+                if (isAjax) return BadRequest(new { message = msg });
+                TempData["ToastError"] = msg;
+                return View();
+            }
+
+            var salt = HttpContext.Session.GetString(SessionKeySalt);
+            if (string.IsNullOrWhiteSpace(salt))
+            {
+                var msg = "Session expired. Please refresh the page and try again.";
+                if (isAjax) return BadRequest(new { message = msg });
+                TempData["ToastError"] = msg;
+                return View();
+            }
+
+            var model = new RegisterVm
+            {
+                Username = AESEncrytDecry.DecryptAES(encryptedModel.Username.Trim(), salt),
+                Password = AESEncrytDecry.DecryptAES(encryptedModel.Password.Trim(), salt),
+                ConfirmPassword = AESEncrytDecry.DecryptAES(encryptedModel.ConfirmPassword.Trim(), salt)
+            };
 
             if (!Regex.IsMatch(model.Username ?? "", @"^[a-zA-Z0-9._-]+$"))
             {
-                ModelState.AddModelError("Username", "Username contains invalid characters.");
-                return View(model);
+                var msg = "Username contains invalid characters.";
+                if (isAjax) return BadRequest(new { message = msg });
+                ModelState.AddModelError("Username", msg);
+                return View();
             }
-            if(model.Password != model.ConfirmPassword)
+
+            if (model.Password != model.ConfirmPassword)
             {
-                ModelState.AddModelError("Password", "Password NotMatch with Confirm Password");
-                return View(model);
+                var msg = "Password and Confirm Password do not match.";
+                if (isAjax) return BadRequest(new { message = msg });
+                ModelState.AddModelError("ConfirmPassword", msg);
+                return View();
+            }
+             
+            ModelState.Clear();
+            if (!TryValidateModel(model))
+            {
+                if (isAjax)
+                {
+                    var allErrors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .ToList();
+
+                    return BadRequest(new
+                    {
+                        message = allErrors.FirstOrDefault() ?? "Validation failed."
+                    });
+                }
+
+                return View();
             }
 
             var user = new ApplicationUser
@@ -287,23 +348,54 @@ public sealed class AuthController : Controller
 
             if (!result.Succeeded)
             {
-                foreach (var err in result.Errors)
-                    ModelState.AddModelError("", err.Description);
+                var errors = result.Errors.Select(e => e.Description).ToList();
 
-                return View(model);
+                foreach (var err in errors)
+                    ModelState.AddModelError("", err);
+
+                if (isAjax)
+                    return BadRequest(new { message = errors.FirstOrDefault() ?? "Registration failed." });
+
+                return View();
             }
 
             await _signInManager.SignInAsync(user, isPersistent: false);
 
+            var redirect = Url.Action("Dashboard", "Dashboard");
+
+            if (isAjax)
+            {
+                return Ok(new
+                {
+                    redirectUrl = redirect,
+                    message = "Registration successful."
+                });
+            }
+
             TempData["ToastSuccess"] = "Registration successful.";
             return RedirectToAction("Dashboard", "Dashboard");
+        }
+        catch (CryptographicException ex)
+        {
+            _logger.LogError(ex, "Crypto error during registration.");
+            ErrorLog.LogErrorToFile(ex, "Crypto error in AuthController.Register");
+
+            var msg = "Security error occurred. Please refresh the page and try again.";
+            if (isAjax) return StatusCode(500, new { message = msg });
+
+            TempData["ToastError"] = msg;
+            return View();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error during registration.");
             ErrorLog.LogErrorToFile(ex, "Unexpected error in AuthController.Register");
-            TempData["ToastError"] = "Registration failed due to server error. Please try again later.";
-            return View(model);
+
+            var msg = "Registration failed due to server error. Please try again later.";
+            if (isAjax) return StatusCode(500, new { message = msg });
+
+            TempData["ToastError"] = msg;
+            return View();
         }
     }
 
