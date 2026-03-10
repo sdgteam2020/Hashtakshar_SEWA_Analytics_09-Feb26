@@ -6,29 +6,20 @@
     const regPasswordInput = document.getElementById("regPassword");
     const regConfirmPasswordInput = document.getElementById("regConfirmPassword");
 
-    const usernameError = document.getElementById("usernameError");
-    const passwordError = document.getElementById("passwordError");
-    const confirmPasswordError = document.getElementById("confirmPasswordError");
-
     let lastToastAt = 0;
 
     function toastOnce(msg, type = "warning") {
-        if (!window.toastr) return;
+        if (!window.toastr || !msg) return;
 
         const now = Date.now();
-        if (now - lastToastAt < 1200) return;
+        if (now - lastToastAt < 800) return;
 
         lastToastAt = now;
 
         if (type === "error") toastr.error(msg);
         else if (type === "success") toastr.success(msg);
+        else if (type === "info") toastr.info(msg);
         else toastr.warning(msg);
-    }
-
-    function setFieldError(element, message) {
-        if (element) {
-            element.textContent = message || "";
-        }
     }
 
     function bindToggle(btnId, inputId) {
@@ -48,99 +39,105 @@
     bindToggle("toggleRegPwd", "regPassword");
     bindToggle("toggleRegConfirmPwd", "regConfirmPassword");
 
-    function validateUsername() {
-        if (!regUsernameInput) return true;
+    function validateUsername(showToast = false) {
+        if (!regUsernameInput) return { valid: true, message: "" };
 
         const raw = regUsernameInput.value || "";
         const cleaned = raw.replace(/[^a-zA-Z0-9._-]/g, "");
 
         if (raw !== cleaned) {
             regUsernameInput.value = cleaned;
-            setFieldError(usernameError, "Only letters, numbers and . _ - are allowed.");
-            toastOnce("Only letters, numbers and . _ - are allowed in username.");
-            return false;
+            const msg = "Only letters, numbers and . _ - are allowed in username.";
+            if (showToast) toastOnce(msg, "warning");
+            return { valid: false, message: msg };
         }
 
         const min = 4;
-        const max = 30;
+        const max = 15;
+
+        if (cleaned.length === 0) {
+            return { valid: false, message: "Username is required." };
+        }
+
+        if (cleaned.length < min) {
+            return { valid: false, message: `Username must be at least ${min} characters.` };
+        }
 
         if (cleaned.length > max) {
             regUsernameInput.value = cleaned.slice(0, max);
-            setFieldError(usernameError, `Username can't be more than ${max} characters.`);
-            toastOnce(`Username can't be more than ${max} characters.`);
-            return false;
+            return { valid: false, message: `Username can't be more than ${max} characters.` };
         }
 
-        if (cleaned.length > 0 && cleaned.length < min) {
-            setFieldError(usernameError, `Username must be at least ${min} characters.`);
-            return false;
-        }
-
-        if (cleaned.length === 0) {
-            setFieldError(usernameError, "Username is required.");
-            return false;
-        }
-
-        setFieldError(usernameError, "");
-        return true;
+        return { valid: true, message: "" };
     }
 
-    function validatePassword() {
-        if (!regPasswordInput) return true;
+    function validatePassword(showToast = false) {
+        if (!regPasswordInput) return { valid: true, message: "" };
 
         const password = regPasswordInput.value || "";
         const strongPassword = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
         if (!password) {
-            setFieldError(passwordError, "Password is required.");
-            return false;
+            return { valid: false, message: "Password is required." };
         }
 
         if (!strongPassword.test(password)) {
-            setFieldError(passwordError, "Password must be at least 8 characters and include 1 uppercase letter and 1 number.");
-            return false;
+            return {
+                valid: false,
+                message: "Password must be at least 8 characters and include 1 uppercase letter and 1 number."
+            };
         }
 
-        setFieldError(passwordError, "");
-        return true;
+        return { valid: true, message: "" };
     }
 
-    function validateConfirmPassword() {
-        if (!regPasswordInput || !regConfirmPasswordInput) return true;
+    function validateConfirmPassword(showToast = false) {
+        if (!regPasswordInput || !regConfirmPasswordInput) return { valid: true, message: "" };
 
         const password = regPasswordInput.value || "";
         const confirmPassword = regConfirmPasswordInput.value || "";
 
         if (!confirmPassword) {
-            setFieldError(confirmPasswordError, "Confirm Password is required.");
-            return false;
+            return { valid: false, message: "Confirm Password is required." };
         }
 
         if (password !== confirmPassword) {
-            setFieldError(confirmPasswordError, "Password and Confirm Password do not match.");
-            return false;
+            return { valid: false, message: "Password and Confirm Password do not match." };
         }
 
-        setFieldError(confirmPasswordError, "");
-        return true;
+        return { valid: true, message: "" };
     }
 
     if (regUsernameInput) {
-        regUsernameInput.addEventListener("input", validateUsername);
-        regUsernameInput.addEventListener("blur", validateUsername);
+        regUsernameInput.addEventListener("input", function () {
+            const result = validateUsername(false);
+            if (!result.valid && regUsernameInput.value.length > 0) {
+                if (!result.valid) toastOnce(result.message, "warning");
+            }
+        });
+
+        regUsernameInput.addEventListener("blur", function () {
+            const result = validateUsername(true);
+            if (!result.valid) toastOnce(result.message, "warning");
+        });
     }
 
     if (regPasswordInput) {
-        regPasswordInput.addEventListener("input", function () {
-            validatePassword();
-            validateConfirmPassword();
+        regPasswordInput.addEventListener("blur", function () {
+            const result = validatePassword(true);
+            if (!result.valid) toastOnce(result.message, "warning");
         });
-        regPasswordInput.addEventListener("blur", validatePassword);
+
+        regPasswordInput.addEventListener("input", function () {       
+            validateConfirmPassword(false);
+        });
     }
 
     if (regConfirmPasswordInput) {
-        regConfirmPasswordInput.addEventListener("input", validateConfirmPassword);
-        regConfirmPasswordInput.addEventListener("blur", validateConfirmPassword);
+        regConfirmPasswordInput.addEventListener("blur", function () {
+            const result = validateConfirmPassword(true);
+            if (!result.valid) toastOnce(result.message, "warning");
+        });
     }
 
     function encryptData(plainText) {
@@ -163,12 +160,19 @@
         registerForm.addEventListener("submit", async function (e) {
             e.preventDefault();
 
-            const isUsernameValid = validateUsername();
-            const isPasswordValid = validatePassword();
-            const isConfirmPasswordValid = validateConfirmPassword();
+            const usernameResult = validateUsername(false);
+            const passwordResult = validatePassword(false);
+            const confirmPasswordResult = validateConfirmPassword(false);
 
-            if (!isUsernameValid || !isPasswordValid || !isConfirmPasswordValid) {
-                toastOnce("Please correct the highlighted fields.", "error");
+            const errors = [];
+
+            if (!usernameResult.valid) errors.push(usernameResult.message);
+            if (!passwordResult.valid) errors.push(passwordResult.message);
+            if (!confirmPasswordResult.valid) errors.push(confirmPasswordResult.message);
+
+            if (errors.length > 0) {
+                const uniqueErrors = [...new Set(errors)];
+                uniqueErrors.forEach(msg => toastr.warning(msg));
                 return;
             }
 
@@ -179,6 +183,11 @@
             const encryptedUsername = encryptData(username);
             const encryptedPassword = encryptData(password);
             const encryptedConfirmPassword = encryptData(confirmPassword);
+
+            if (!encryptedUsername || !encryptedPassword || !encryptedConfirmPassword) {
+                toastr.error("Security error occurred. Please refresh the page and try again.");
+                return;
+            }
 
             const formData = new FormData(registerForm);
             formData.set("Username", encryptedUsername);

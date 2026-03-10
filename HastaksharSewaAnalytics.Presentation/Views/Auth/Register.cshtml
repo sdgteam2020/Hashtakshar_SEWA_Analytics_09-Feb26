@@ -48,7 +48,7 @@
                            pattern="[a-zA-Z0-9._-]+"
                            title="Only letters, numbers, dot (.), underscore (_) and hyphen (-) are allowed"
                            required />
-                    <div class="text-danger small mt-1" id="usernameError">
+                    <div class="text-danger small mt-1 d-none" id="usernameError">
                         @Html.ValidationMessage("Username")
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                         </button>
                     </div>
 
-                    <div class="text-danger small mt-1" id="passwordError">
+                    <div class="text-danger small mt-1 d-none" id="passwordError">
                         @Html.ValidationMessage("Password")
                     </div>
 
@@ -100,7 +100,7 @@
                         </button>
                     </div>
 
-                    <div class="text-danger small mt-1" id="confirmPasswordError">
+                    <div class="text-danger small mt-1 d-none" id="confirmPasswordError">
                         @Html.ValidationMessage("ConfirmPassword")
                     </div>
                 </div>
