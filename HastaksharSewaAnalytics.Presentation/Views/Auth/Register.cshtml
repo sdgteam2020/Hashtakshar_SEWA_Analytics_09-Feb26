@@ -38,15 +38,15 @@
                 <div class="mb-3">
                     <span id="spnhdns" class="d-none">@ViewBag.hdns</span>
 
-                    <label class="form-label text-muted">Username</label>
+                    <label class="form-label text-muted" for="regUsername">Username</label>
                     <input class="form-control register-pill"
                            id="regUsername"
                            name="Username"
                            value="@Model?.Username"
                            placeholder="Enter username"
                            autocomplete="off"
-                           pattern="[a-zA-Z0-9._-]+"
-                           title="Only letters, numbers, dot (.), underscore (_) and hyphen (-) are allowed"
+                           pattern="^(?=(?:.*_){0,2}$)(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9_]{4,15}$"
+                           title="Username must be 4 to 15 characters, contain at least one letter, one number, and maximum 2 underscores (_)."
                            required />
                     <div class="text-danger small mt-1 d-none" id="usernameError">
                         @Html.ValidationMessage("Username")
@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label text-muted">Password</label>
+                    <label class="form-label text-muted" for="regPassword">Password</label>
 
                     <div class="input-group register-pill-group">
                         <input class="form-control"
@@ -67,7 +67,8 @@
 
                         <button class="btn btn-olive-outline"
                                 type="button"
-                                id="toggleRegPwd">
+                                id="toggleRegPwd"
+                                aria-label="Show or hide password">
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
@@ -82,7 +83,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label text-muted">Confirm Password</label>
+                    <label class="form-label text-muted" for="regConfirmPassword">Confirm Password</label>
 
                     <div class="input-group register-pill-group">
                         <input class="form-control"
@@ -95,7 +96,8 @@
 
                         <button class="btn btn-olive-outline"
                                 type="button"
-                                id="toggleRegConfirmPwd">
+                                id="toggleRegConfirmPwd"
+                                aria-label="Show or hide confirm password">
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
@@ -106,7 +108,7 @@
                 </div>
 
                 <div class="d-grid mt-3">
-                    <button type="submit" class="btn btn-olive-outline py-2">
+                    <button type="submit" class="btn btn-olive-outline py-2" aria-label="Create Account" >
                         <i class="bi bi-person-check me-1"></i>
                         Create Account
                     </button>

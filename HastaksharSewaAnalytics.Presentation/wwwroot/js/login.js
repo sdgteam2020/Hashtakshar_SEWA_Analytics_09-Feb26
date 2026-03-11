@@ -31,15 +31,24 @@ function bindToggle(btnId, inputId) {
 
 bindToggle("togglePasswordBtn", "loginPassword");
 
-usernameInput.addEventListener("input", function () { 
-    const allowed = /[^a-zA-Z0-9_]/g;
+usernameInput.addEventListener("input", function () {
+    let value = this.value;
 
-    if (allowed.test(this.value)) {
-        this.value = this.value.replace(allowed, "");
-        toastr.warning("Special characters are not allowed.");
+    
+    value = value.replaceAll(/\W/g, "");
+
+    
+    let underscoreCount = 0;
+    value = value.replaceAll(/_/g, (match) => {
+        underscoreCount++;
+        return underscoreCount <= 2 ? match : "";
+    });
+
+    if (this.value !== value) {
+        this.value = value;
+        toastr.warning("Only letters, numbers, and maximum 2 underscores are allowed.");
     }
 });
-
 
 document.getElementById("loginForm").addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -83,7 +92,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         toastr.success(data?.message || "Login successful.");
 
         setTimeout(() => {
-            window.location.href = data?.redirectUrl || "/Dashboard/Dashboard";
+            globalThis.location.href = data?.redirectUrl || "/Dashboard/Dashboard";
         }, 400);
 
     } catch (err) {
@@ -117,7 +126,7 @@ function decryptData(cipherText) {
     const key = CryptoJS.enc.Utf8.parse(secretKey);
     const iv = CryptoJS.enc.Utf8.parse(secretKey.substring(0, 16));
 
-    cipherText = cipherText.replace(/ /g, "+");
+    cipherText = cipherText.replaceAll(/ /g, "+");
 
     const decrypted = CryptoJS.AES.decrypt(cipherText, key, {
         iv: iv,

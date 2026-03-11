@@ -9,7 +9,7 @@
     let lastToastAt = 0;
 
     function toastOnce(msg, type = "warning") {
-        if (!window.toastr || !msg) return;
+        if (!globalThis.toastr || !msg) return;
 
         const now = Date.now();
         if (now - lastToastAt < 800) return;
@@ -40,15 +40,26 @@
     bindToggle("toggleRegConfirmPwd", "regConfirmPassword");
 
     function validateUsername(showToast = false) {
-        if (!regUsernameInput) return { valid: true, message: "" };
+        if (!regUsernameInput) {
+            return { valid: true, message: "" };
+        }
 
         const raw = regUsernameInput.value || "";
-        const cleaned = raw.replace(/[^a-zA-Z0-9._-]/g, "");
+         
+        let cleaned = raw.replaceAll(/\W/g, "");
+         
+        let underscoreCount = 0;
+        cleaned = cleaned.replaceAll(/_/g, () => {
+            underscoreCount++;
+            return underscoreCount <= 2 ? "_" : "";
+        });
 
         if (raw !== cleaned) {
             regUsernameInput.value = cleaned;
-            const msg = "Only letters, numbers and . _ - are allowed in username.";
-            if (showToast) toastOnce(msg, "warning");
+            const msg = "Only letters, numbers, and maximum 2 underscores (_) are allowed in username.";
+            if (showToast) {
+                toastOnce(msg, "warning");
+            }
             return { valid: false, message: msg };
         }
 
@@ -66,6 +77,14 @@
         if (cleaned.length > max) {
             regUsernameInput.value = cleaned.slice(0, max);
             return { valid: false, message: `Username can't be more than ${max} characters.` };
+        }
+
+        if (!/[A-Za-z]/.test(cleaned)) {
+            return { valid: false, message: "Username must contain at least one letter." };
+        }
+
+        if (!/\d/.test(cleaned)) {
+            return { valid: false, message: "Username must contain at least one number." };
         }
 
         return { valid: true, message: "" };
@@ -219,7 +238,7 @@
                 toastr.success(data?.message || "Registration successful.");
 
                 setTimeout(() => {
-                    window.location.href = data?.redirectUrl || "/Dashboard/Dashboard";
+                    globalThis.location.href = data?.redirectUrl || "/Dashboard/Dashboard";
                 }, 400);
 
             } catch (err) {

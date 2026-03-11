@@ -25,23 +25,23 @@
 
             <form id="loginForm" asp-controller="Auth" asp-action="Login" method="post">
                 @Html.AntiForgeryToken()
-                 
+
                 <div class="mb-3">
                     <span id="spnhdns" class="d-none">@ViewBag.hdns</span>
-                    <label class="form-label text-muted">Username</label>
+                    <label for="loginUsername" class="form-label text-muted">Username</label>
                     <input type="text"
                            id="loginUsername"
                            name="Username"
                            class="form-control"
                            placeholder="Enter username"
-                           pattern="[a-zA-Z0-9_]+"
-                           title="Only letters, numbers and underscore (_) are allowed"
+                           pattern="^(?!.*_.*_.*_)[A-Za-z0-9_]+$"
+                           title="Only letters, numbers, and maximum 2 underscores are allowed"
                            autocomplete="off"
                            required />
                 </div>
-                 
+
                 <div class="mb-3">
-                    <label class="form-label text-muted">Password</label>
+                    <label for="loginPassword" class="form-label text-muted">Password</label>
                     <div class="input-group">
                         <input type="password"
                                name="Password"
@@ -53,19 +53,20 @@
 
                         <button class="btn btn-olive-outline"
                                 type="button"
-                                id="togglePasswordBtn">
+                                id="togglePasswordBtn"
+                                aria-label="Show or hide password">
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
                 </div>
-                 
+
                 <div class="d-grid">
                     <button type="submit" class="btn btn-olive-outline py-2">
                         <i class="bi bi-box-arrow-in-right me-1"></i>
                         Login
                     </button>
                 </div>
-                 
+
                 <div class="text-center mt-3">
                     <a asp-controller="Auth" asp-action="Register" class="small">
                         Register a new user
@@ -85,5 +86,5 @@
 
 @section Scripts {
     <script asp-src-include="~/lib/crypto-js/crypto-js.min.js"></script>
-    <script src="~/js/login.js" asp-append-version="true"></script>    
+    <script src="~/js/login.js" asp-append-version="true"></script>
 }

@@ -30,7 +30,7 @@ $(function () {
 (function () {
     let shown = false;
 
-    window.handleSessionExpired = function (msg) {
+    globalThis.handleSessionExpired = function (msg) {
         if (shown) return;
         shown = true;
          
@@ -56,22 +56,22 @@ $(function () {
             const btn = document.getElementById('btnGoLogin');
             if (btn) {
                 btn.onclick = function () {
-                    window.location.href = '/Auth/Login?reason=expired';
+                    globalThis.location.href = '/Auth/Login?reason=expired';
                 };
             }
             return;
         }
          
         alert(msg || 'Session expired. Please login again.');
-        window.location.href = '/Auth/Login?reason=expired';
+        globalThis.location.href = '/Auth/Login?reason=expired';
     };
 })();
 
 
 (function () {
-    const _fetch = window.fetch;
+    const _fetch = globalThis.fetch;
 
-    window.fetch = async function (input, init = {}) {
+    globalThis.fetch = async function (input, init = {}) {
         init.headers = init.headers || {};
          
         if (!init.headers['X-Requested-With']) init.headers['X-Requested-With'] = 'XMLHttpRequest';
@@ -88,13 +88,13 @@ $(function () {
                     if (j?.message) msg = j.message;
                 }
             } catch { }
-            window.handleSessionExpired(msg);
+            globalThis.handleSessionExpired(msg);
             throw new Error('Unauthorized (401)');
         }
          
         const ct = res.headers.get('content-type') || '';
         if (ct.includes('text/html')) { 
-              window.handleSessionExpired('Session expired. Please login again.');
+            globalThis.handleSessionExpired('Session expired. Please login again.');
         }
 
         return res;
@@ -107,7 +107,7 @@ try {
 
         $(document).on('xhr.dt', function (e, settings, json, xhr) {
             if (xhr && xhr.status === 401) {
-                window.handleSessionExpired(json?.message || 'Session expired. Please login again.');
+                globalThis.handleSessionExpired(json?.message || 'Session expired. Please login again.');
             }
         });
     }
@@ -116,7 +116,7 @@ try {
  
 $(document).on('xhr.dt', function (e, settings, json, xhr) {
     if (xhr && xhr.status === 401) {
-        window.handleSessionExpired(json?.message || 'Session expired. Please login again.');
+        globalThis.handleSessionExpired(json?.message || 'Session expired. Please login again.');
     }
 });
 
@@ -133,7 +133,7 @@ $.ajaxSetup({
                 const j = xhr.responseJSON;
                 if (j?.message) msg = j.message;
             } catch { }
-            window.handleSessionExpired(msg);
+            globalThis.handleSessionExpired(msg);
         }
     }
 });
