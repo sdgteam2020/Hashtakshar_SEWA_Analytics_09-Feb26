@@ -1,146 +1,191 @@
-﻿
-fetch('/Dashboard/TotalInstallCount')
-    .then(res => res.json())
-    .then(data => {
-        document.querySelector('[data-count="applications"]').textContent = data.totalInstallations;
-    });
+﻿async function fetchJson(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Request failed for ${url}: ${response.status}`);
+    }
+    return response.json();
+}
 
-fetch('/Dashboard/TodayUserCount')
-    .then(res => res.json())
-    .then(data => {
-        document.querySelector('[data-count="users"]').textContent = data.todayUsers;
-    });
+async function loadDashboardCounts() {
+    try {
+        const applicationsEl = document.querySelector('[data-count="applications"]');
+        const usersEl = document.querySelector('[data-count="users"]');
+        const logsEl = document.querySelector('[data-count="logsmonitor"]');
+        const vaultEl = document.querySelector('[data-count="vaultmaster"]');
+        const signedEl = document.querySelector('[data-count="signed"]');
 
-fetch('/Dashboard/GetClientErrorLogsCount')
-    .then(res => res.json())
-    .then(data => {
-        document.querySelector('[data-count="logsmonitor"]').textContent = data.clientErrorLogsCount;
-    });
+        const [
+            totalInstallData,
+            todayUserData,
+            logsData,
+            vaultData,
+            signData
+        ] = await Promise.all([
+            fetchJson('/Dashboard/TotalInstallCount'),
+            fetchJson('/Dashboard/TodayUserCount'),
+            fetchJson('/Dashboard/GetClientErrorLogsCount'),
+            fetchJson('/Dashboard/GetVaultDataCount'),
+            fetchJson('/Dashboard/GetDigitalSignCount')
+        ]);
 
-fetch('/Dashboard/GetVaultDataCount')
-    .then(res => res.json())
-    .then(data => {
-        document.querySelector('[data-count="vaultmaster"]').textContent = data.vaultDataCount;
-    });
+        if (applicationsEl) {
+            applicationsEl.textContent = totalInstallData.totalInstallations ?? '0';
+        }
 
-fetch('/Dashboard/GetDigitalSignCount')
-    .then(res => res.json())
-    .then(data => {
-        document.querySelector('[data-count="signed"]').textContent = data.digitalSignCount;
-    });
-     
+        if (usersEl) {
+            usersEl.textContent = todayUserData.todayUsers ?? '0';
+        }
+
+        if (logsEl) {
+            logsEl.textContent = logsData.clientErrorLogsCount ?? '0';
+        }
+
+        if (vaultEl) {
+            vaultEl.textContent = vaultData.vaultDataCount ?? '0';
+        }
+
+        if (signedEl) {
+            signedEl.textContent = signData.digitalSignCount ?? '0';
+        }
+    } catch (error) {
+        console.error('Failed to load dashboard counts.', error);
+    }
+}
+
+$(function () {
+    void loadDashboardCounts();
+});
+
 $(function () {
     let appsTable = null;
 
     $('#kpiTotalApps').on('click', function () {
         const el = document.getElementById('appsModal');
-        if (!el) return console.error('Modal not found. Render the partial first.');
 
-        const existing = bootstrap.Modal.getInstance(el);
-        if (existing) existing.dispose();
+        if (el) {
+            const existing = bootstrap.Modal.getInstance(el);
+            if (existing) {
+                existing.dispose();
+            }
 
-        const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
-        modal.show();
+            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
+            modal.show();
+        } else {
+            console.error('Modal not found. Render the partial first.');
+        }
     });
-
 
     $('#appsModal').off('shown.bs.modal').on('shown.bs.modal', function () {
-        if (!appsTable) {
+        if (appsTable) {
+            appsTable.ajax.reload(null, false);
+        } else {
             appsTable = $('#tblApplications').DataTable({
                 ajax: { url: '/Dashboard/GetApplications', type: 'GET', dataSrc: '' },
-                columns: [{
-                    data: null,
-                    render: function (data, type, row, meta) {
-                        return meta.row + 1;  
-                    }
-                },
-                { data: 'domainId' },
-                { data: 'ipAddress' },
-                { data: 'version' },
-                { data: 'installDate' }
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { data: 'domainId' },
+                    { data: 'ipAddress' },
+                    { data: 'version' },
+                    { data: 'installDate' }
                 ],
                 pageLength: 10,
                 responsive: true,
                 autoWidth: false,
                 dom: '<"row mb-2"<"col-sm-6"l><"col-sm-6"f>>t<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
                 createdRow: function (row) {
-                    row.classList.add('align-middle');  
+                    row.classList.add('align-middle');
                 }
             });
-        } else {
-            appsTable.ajax.reload(null, false);
         }
     });
 });
- 
+
 $(function () {
     let usersTable = null;
+
     $('#kpiTodayUsers').on('click', function () {
         const el = document.getElementById('todayUsersModal');
-        if (!el) return console.error('Modal not found. Render the partial first.');
 
-        const existing = bootstrap.Modal.getInstance(el);
-        if (existing) existing.dispose();
+        if (el) {
+            const existing = bootstrap.Modal.getInstance(el);
+            if (existing) {
+                existing.dispose();
+            }
 
-        const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
-        modal.show();
+            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
+            modal.show();
+        } else {
+            console.error('Modal not found. Render the partial first.');
+        }
     });
+
     $('#todayUsersModal').off('shown.bs.modal').on('shown.bs.modal', function () {
-        if (!usersTable) {
+        if (usersTable) {
+            usersTable.ajax.reload(null, false);
+        } else {
             usersTable = $('#tblTodayUsers').DataTable({
                 ajax: { url: '/Dashboard/GetTodayUsers', type: 'GET', dataSrc: '' },
-                columns: [{
-                    data: null,
-                    render: function (data, type, row, meta) {
-                        return meta.row + 1;  
-                    }
-                },
-                { data: 'domainId' },
-                { data: 'ipAddress' },
-                { data: 'version' },
-                { data: 'installDate' }
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { data: 'domainId' },
+                    { data: 'ipAddress' },
+                    { data: 'version' },
+                    { data: 'installDate' }
                 ],
                 pageLength: 10,
                 responsive: true,
                 autoWidth: false,
                 dom: '<"row mb-2"<"col-sm-6"l><"col-sm-6"f>>t<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
                 createdRow: function (row) {
-                    row.classList.add('align-middle');  
+                    row.classList.add('align-middle');
                 }
             });
-        } else {
-            usersTable.ajax.reload(null, false);
         }
     });
 });
- 
+
 $(function () {
     let logsTable = null;
-     
+
     $('#kpiClientErrorLogs').on('click', function () {
-        const el = document.getElementById('clientErrorLogsModal');  
-        if (!el) return console.error('Modal not found. Render the partial first.');
+        const el = document.getElementById('clientErrorLogsModal');
 
-        const existing = bootstrap.Modal.getInstance(el);
-        if (existing) existing.dispose();
+        if (el) {
+            const existing = bootstrap.Modal.getInstance(el);
+            if (existing) {
+                existing.dispose();
+            }
 
-        const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
-        modal.show();
+            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
+            modal.show();
+        } else {
+            console.error('Modal not found. Render the partial first.');
+        }
     });
-     
+
     $('#clientErrorLogsModal')
         .off('shown.bs.modal')
         .on('shown.bs.modal', function () {
-
-            if (!logsTable) {
+            if (logsTable) {
+                logsTable.ajax.reload(null, false);
+            } else {
                 logsTable = $('#tblClientErrorLogs').DataTable({
-                    ajax: { url: '/Dashboard/getclienterrorlogsdata', type: 'GET', dataSrc: '' },  
-
+                    ajax: { url: '/Dashboard/getclienterrorlogsdata', type: 'GET', dataSrc: '' },
                     columns: [
                         {
                             data: null,
                             render: function (data, type, row, meta) {
-                                return meta.row + 1;  
+                                return meta.row + 1;
                             }
                         },
                         { data: 'ipAddress', defaultContent: '-' },
@@ -149,7 +194,9 @@ $(function () {
                         { data: 'operatingSystem', defaultContent: '-' },
                         {
                             data: 'is64Bit',
-                            render: function (v) { return v ? 'Yes' : 'No'; },
+                            render: function (v) {
+                                return v ? 'Yes' : 'No';
+                            },
                             defaultContent: '-'
                         },
                         { data: 'systemDirectory', defaultContent: '-' },
@@ -158,17 +205,22 @@ $(function () {
                             data: 'errorMessage',
                             defaultContent: '-',
                             render: function (v) {
-                                if (!v) return '-';
-                                return v.length > 60 ? (v.substring(0, 60) + '...') : v;
+                                if (!v) {
+                                    return '-';
+                                }
+                                return v.length > 60 ? `${v.substring(0, 60)}...` : v;
                             }
                         },
                         {
-                            data: 'loggedAt',  
+                            data: 'loggedAt',
                             defaultContent: '-',
                             render: function (v) {
-                                if (!v) return '-';
+                                if (!v) {
+                                    return '-';
+                                }
+
                                 const dt = new Date(v);
-                                return isNaN(dt.getTime()) ? v : dt.toLocaleString();
+                                return Number.isNaN(dt.getTime()) ? v : dt.toLocaleString();
                             }
                         },
                         {
@@ -181,11 +233,11 @@ $(function () {
                                     stackTrace: row.stackTrace,
                                     extra: row.extra
                                 }));
+
                                 return `<button type="button" class="btn btn-sm btn-outline-light view-client-log" data-json="${safe}">View</button>`;
                             }
                         }
                     ],
-
                     pageLength: 10,
                     responsive: true,
                     autoWidth: false,
@@ -195,64 +247,72 @@ $(function () {
                         row.classList.add('align-middle');
                     }
                 });
-
-            } else {
-                logsTable.ajax.reload(null, false);
             }
         });
-         
+
     $(document).on('click', '.view-client-log', function () {
         const el = document.getElementById('clientErrorLogDetailModal');
-        if (!el) return console.error('Detail modal not found.');
 
-        const data = JSON.parse(decodeURIComponent($(this).attr('data-json')));
+        if (el) {
+            const data = JSON.parse(decodeURIComponent($(this).attr('data-json')));
 
-        $('#ced_errorMessage').text(data.errorMessage || '-');
-        $('#ced_stackTrace').text(data.stackTrace || '-');
-        $('#ced_extra').text(data.extra || '-');
+            $('#ced_errorMessage').text(data.errorMessage || '-');
+            $('#ced_stackTrace').text(data.stackTrace || '-');
+            $('#ced_extra').text(data.extra || '-');
 
-        const existing = bootstrap.Modal.getInstance(el);
-        if (existing) existing.dispose();
+            const existing = bootstrap.Modal.getInstance(el);
+            if (existing) {
+                existing.dispose();
+            }
 
-        const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: true });
-        modal.show();
+            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: true });
+            modal.show();
+        } else {
+            console.error('Detail modal not found.');
+        }
     });
 });
- 
+
 $(function () {
     let pkvTable = null;
-     
+
     $('#kpiVault').on('click', function () {
         const el = document.getElementById('vaultMasterModal');
-        if (!el) return console.error('Modal not found. Render the partial first.');
 
-        const existing = bootstrap.Modal.getInstance(el);
-        if (existing) existing.dispose();
+        if (el) {
+            const existing = bootstrap.Modal.getInstance(el);
+            if (existing) {
+                existing.dispose();
+            }
 
-        const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
-        modal.show();
+            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
+            modal.show();
+        } else {
+            console.error('Modal not found. Render the partial first.');
+        }
     });
 
     $('#vaultMasterModal').off('shown.bs.modal').on('shown.bs.modal', function () {
-
-        if (!pkvTable) {
+        if (pkvTable) {
+            pkvTable.ajax.reload(null, false);
+        } else {
             pkvTable = $('#tblVaultMaster').DataTable({
-                ajax: { url: '/Dashboard/GetVaultMasterData', type: 'GET', dataSrc: '' }, 
+                ajax: { url: '/Dashboard/GetVaultMasterData', type: 'GET', dataSrc: '' },
                 pageLength: 10,
                 responsive: true,
                 autoWidth: false,
                 scrollX: true,
                 dom: '<"row mb-2"<"col-sm-6"l><"col-sm-6"f>>t<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
-
                 columns: [
                     {
                         data: null,
-                        render: function (data, type, row, meta) { return meta.row + 1; }
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
                     },
                     {
                         data: 'serialNo',
                         defaultContent: '-'
-
                     },
                     {
                         data: 'tokenValid',
@@ -264,12 +324,14 @@ $(function () {
                     },
                     { data: 'validFrom', defaultContent: '-' },
                     { data: 'validTo', defaultContent: '-' },
-                    { data: 'createdAt', defaultContent: '-' },  
+                    { data: 'createdAt', defaultContent: '-' },
                     {
                         data: 'public_Key',
                         defaultContent: '-',
                         render: function (v) {
-                            if (!v) return '-';
+                            if (!v) {
+                                return '-';
+                            }
                             return `<span class="text-truncate d-inline-block publicKeyStatus">${v}</span>`;
                         }
                     },
@@ -287,58 +349,64 @@ $(function () {
                         }
                     }
                 ],
-
                 createdRow: function (row) {
                     row.classList.add('align-middle');
                 }
             });
-        } else {
-            pkvTable.ajax.reload(null, false);
         }
-    }); 
+    });
 
     $(document).on('click', '.pkv-view', function () {
         const key = decodeURIComponent($(this).attr('data-key') || '');
         $('#pkv_keyText').val(key || '-');
 
         const el = document.getElementById('publicKeyViewModal');
-        const existing = bootstrap.Modal.getInstance(el);
-        if (existing) existing.dispose();
 
-        new bootstrap.Modal(el, { backdrop: 'static', keyboard: true }).show();
+        if (el) {
+            const existing = bootstrap.Modal.getInstance(el);
+            if (existing) {
+                existing.dispose();
+            }
+
+            new bootstrap.Modal(el, { backdrop: 'static', keyboard: true }).show();
+        } else {
+            console.error('Public key view modal not found.');
+        }
     });
-     
+
     $('#btnCopyPublicKey').on('click', async function () {
         const text = $('#pkv_keyText').val() || '';
+        const ta = document.getElementById('pkv_keyText');
+
         try {
             await navigator.clipboard.writeText(text);
-        } catch { 
-            const ta = document.getElementById('pkv_keyText');
-            ta.select();
-            document.execCommand('copy');
+        } catch (error) {
+            if (ta) {
+                ta.focus();
+                ta.select();
+            }
+            console.error('Clipboard copy failed. User can press Ctrl+C manually.', error);
         }
     });
 });
 
 $(function () {
-    let signTable = null;
-     
     $(document).on('click', '#kpiDigitalSignDetails', function () {
-
         const el = document.getElementById('digitalSignDetailsModal');
-        if (!el) {
+
+        if (el) {
+            const modal = bootstrap.Modal.getOrCreateInstance(el, { backdrop: 'static', keyboard: false });
+            modal.show();
+        } else {
             console.error('Modal not found. Render the partial first.');
-            return;
         }
-         
-        const modal = bootstrap.Modal.getOrCreateInstance(el, { backdrop: 'static', keyboard: false });
-        modal.show();
-    }); 
+    });
 
     $(document).on('shown.bs.modal', '#digitalSignDetailsModal', function () {
-
-        if (!$.fn.DataTable.isDataTable('#tblDigitalSignDetails')) {
-            signTable = $('#tblDigitalSignDetails').DataTable({
+        if ($.fn.DataTable.isDataTable('#tblDigitalSignDetails')) {
+            $('#tblDigitalSignDetails').DataTable().ajax.reload(null, false);
+        } else {
+            $('#tblDigitalSignDetails').DataTable({
                 ajax: { url: '/Dashboard/GetDigitalSignList', type: 'GET', dataSrc: '' },
                 columns: [
                     {
@@ -356,10 +424,10 @@ $(function () {
                 responsive: true,
                 autoWidth: false,
                 dom: '<"row mb-2"<"col-sm-6"l><"col-sm-6"f>>t<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
-                createdRow: function (row) { row.classList.add('align-middle'); }
+                createdRow: function (row) {
+                    row.classList.add('align-middle');
+                }
             });
-        } else {
-            $('#tblDigitalSignDetails').DataTable().ajax.reload(null, false);
         }
     });
 });

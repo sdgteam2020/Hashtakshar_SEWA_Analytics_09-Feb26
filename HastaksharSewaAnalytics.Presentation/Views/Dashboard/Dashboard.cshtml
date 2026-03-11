@@ -67,11 +67,6 @@
 
 </div>
 
-
-<!-- Graphs + Charts -->
-
-
-<!-- Modals -->
 @await Html.PartialAsync("~/Views/Shared/Dashboard/_totalapplicationmodal.cshtml")
 @await Html.PartialAsync("~/Views/Shared/Dashboard/_todayusersdetailsmodal.cshtml")
 @await Html.PartialAsync("~/Views/Shared/Dashboard/_logsdetailsmodal.cshtml")
@@ -81,5 +76,5 @@
 @await Html.PartialAsync("~/Views/Shared/Dashboard/_digitalsigndetailsmodal.cshtml")
 
 @section Scripts {
-    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+    <script type="module" src="~/js/dashboard.js" asp-append-version="true"></script>
 }

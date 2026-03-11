@@ -6,7 +6,7 @@
 .login-card {
     padding: 2rem;
 }
- 
+
 .login-title {
     font-weight: 700;
     letter-spacing: .3px;
@@ -29,83 +29,73 @@
     margin: 0 auto 1rem;
     box-shadow: inset 0 0 10px rgba(0,0,0,.35), 0 0 14px rgba(165,207,130,.18);
 }
- 
+
 .login-card .form-control {
     padding: .55rem .65rem;
 }
 
- 
 @media (max-width: 480px) {
     .login-container {
         margin-top: 4vh;
     }
 }
-  
+
 .login-card .form-control:focus,
 .login-card .form-select:focus {
     outline: none !important;
-    border-color: rgba(165, 207, 130, .65) !important;  
-    box-shadow: 0 0 0 0.2rem rgba(165, 207, 130, .18),  
-    0 0 18px rgba(165, 207, 130, .10) !important; 
+    border-color: rgba(165, 207, 130, .65) !important;
+    box-shadow: 0 0 0 0.2rem rgba(165, 207, 130, .18), 0 0 18px rgba(165, 207, 130, .10) !important;
 }
- 
-.login-card .input-group .form-control:focus {
-    position: relative;
-    z-index: 3;  
-}
- 
+
 .login-card #togglePasswordBtn:focus,
 .login-card #togglePasswordBtn:active:focus {
     outline: none !important;
     border-color: rgba(165, 207, 130, .65) !important;
     box-shadow: 0 0 0 0.2rem rgba(165, 207, 130, .18), 0 0 18px rgba(165, 207, 130, .10) !important;
 }
- 
+
 .login-card .btn:focus,
 .login-card .btn:active:focus {
     outline: none !important;
     border-color: rgba(165, 207, 130, .65) !important;
     box-shadow: 0 0 0 0.2rem rgba(165, 207, 130, .18), 0 0 18px rgba(165, 207, 130, .10) !important;
 }
- 
-.login-card .input-group .form-control {
-    border-right: 0;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-}
 
-.login-card .input-group .btn {
-    border-left: 0;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-}
- 
 .login-card .input-group {
     border: 1px solid rgba(255,255,255,.12);
-    border-radius: 999px;  
-    background: #102217;  
-    overflow: hidden; 
+    border-radius: 999px;
+    background: #102217;
+    overflow: hidden;
 }
- 
+
     .login-card .input-group .form-control {
+        position: relative;
+        z-index: 3;
+        border-right: 0;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
         border: 0 !important;
         box-shadow: none !important;
         background: transparent !important;
         padding: .55rem .9rem;
+        border-radius: 0 !important;
     }
-     
+
     .login-card .input-group .btn {
+        border-left: 0;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
         border: 0 !important;
         box-shadow: none !important;
         background: transparent !important;
         color: var(--muted);
         padding: .55rem .9rem;
     }
-     
+
     .login-card .input-group .btn {
         border-left: 1px solid rgba(255,255,255,.10) !important;
     }
-     
+
     .login-card .input-group:focus-within {
         border-color: rgba(165,207,130,.65);
         box-shadow: 0 0 0 .2rem rgba(165,207,130,.18), 0 0 18px rgba(165,207,130,.10);
@@ -115,7 +105,7 @@
         color: var(--text);
         background: rgba(165,207,130,.06) !important;
     }
- 
+
 .login-card > form > .mb-3:not(:has(.input-group)) .form-control,
 .login-card form .mb-3:not(:has(.input-group)) .form-control {
     border-radius: 999px !important;
@@ -137,7 +127,3 @@
     .login-card form .mb-3:not(:has(.input-group)) .form-control::placeholder {
         color: rgba(255,255,255,.45) !important;
     }
- 
-.login-card .input-group .form-control {
-    border-radius: 0 !important;  
-}

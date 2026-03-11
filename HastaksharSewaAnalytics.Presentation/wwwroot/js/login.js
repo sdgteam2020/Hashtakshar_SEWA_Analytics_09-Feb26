@@ -96,6 +96,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         }, 400);
 
     } catch (err) {
+        console.error("Login request failed:", err);
         toastr.error("Network error. Please try again.");
     }
 });
