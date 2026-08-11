@@ -56,7 +56,7 @@ public class TransactionController : Controller
         catch (Exception ex)
         { 
             Console.WriteLine($"Error in SaveInstallationAsync: {ex.Message}");
-            ErrorLog.LogErrorToFile(ex, $"Error in SaveInstallationAsync for DomainId: {obj.domainId}");
+            ErrorLog.LogErrorToFile(ex, $"Error in SaveInstallationAsync for DomainId: {obj.DomainId}");
             return BadRequest(false);
         }
     }
@@ -78,7 +78,7 @@ public class TransactionController : Controller
         catch (Exception ex)
         {
             Console.WriteLine($"Error in SaveDailyRunAsync: {ex.Message}");
-            ErrorLog.LogErrorToFile(ex, $"Error in SaveDailyRunAsync for DomainId: {obj.domainId}");
+            ErrorLog.LogErrorToFile(ex, $"Error in SaveDailyRunAsync for DomainId: {obj.DomainId}");
             return BadRequest(false);
         }
     }

@@ -2,7 +2,7 @@
 
 public sealed record VaultSearchRequest
 {
-    public string? ArmyNo { get; set; }   // you are using this as "term"
-    public string? Name { get; set; }     // kept for future
-    public string? Term { get; set; }     // optional
+    public string? ArmyNo { get; set; }   
+    public string? Name { get; set; }      
+    public string? Term { get; set; }     
 }

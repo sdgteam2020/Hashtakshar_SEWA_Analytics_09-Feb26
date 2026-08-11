@@ -8,7 +8,7 @@ namespace HastaksharSewaAnalytics.Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DigitalSignController : Controller
+public class DigitalSignController : ControllerBase
 {
     private readonly ILogger<DigitalSignController> _logger;
     private readonly IDigitalSignService _digitalSignService;
@@ -27,7 +27,7 @@ public class DigitalSignController : Controller
         try
         {
             var result = await _digitalSignService.SaveDigitalSign(saveDigitalSignRequest, cancellationToken);
-            if (result == true)
+            if (result)
             {
                 return Ok(result);
             }

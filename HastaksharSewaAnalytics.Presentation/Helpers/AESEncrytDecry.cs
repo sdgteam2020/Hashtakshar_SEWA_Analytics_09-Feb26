@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace HastaksharSewaAnalytics.Presentation.Helpers;
 
-public static class AESEncrytDecry
+public static class AesEncrytDecry
 {
     public static string GetSalt()
     {

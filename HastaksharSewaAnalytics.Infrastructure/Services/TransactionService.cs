@@ -15,39 +15,36 @@ public sealed record TransactionService : ITransactionService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<bool?> SaveVaultMasterData(SaveUserPublicDataRequest userPublicDataRequest, CancellationToken cancellationToken = default)
+    public async Task<bool?> SaveVaultMasterData(
+        SaveUserPublicDataRequest userPublicDataRequest,
+        CancellationToken cancellationToken = default)
     {
-        if (userPublicDataRequest == null)
-        {
-            throw new ArgumentNullException(nameof(userPublicDataRequest));
-        }
-        try
-        {
+        ArgumentNullException.ThrowIfNull(userPublicDataRequest);
 
-            var repository = _unitOfWork.Repository<VaultMaster, int>();
-            var IsExist = await repository.CountAsync(
-               x=> x.SerialNo == userPublicDataRequest.SerialNo,
-               ct: cancellationToken
-            );
-            if (IsExist > 0)
-            {
-                return true;
-            }
-            var userPublicData = VaultMaster.Create(
-                userPublicDataRequest.Public_Key,
-                userPublicDataRequest.SerialNo,
-                userPublicDataRequest.TokenValid,
-                userPublicDataRequest.ValidFrom,
-                userPublicDataRequest.ValidTo
-            );
-            await repository.AddAsync(userPublicData);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var repository = _unitOfWork.Repository<VaultMaster, int>();
+
+        var isExist = await repository.CountAsync(
+            x => x.SerialNo == userPublicDataRequest.SerialNo,
+            ct: cancellationToken);
+
+        if (isExist > 0)
+        {
             return true;
         }
-        catch
-        {
-            throw;
-        }
+
+        var userPublicData = VaultMaster.Create(
+            userPublicDataRequest.Public_Key,
+            userPublicDataRequest.SerialNo,
+            userPublicDataRequest.TokenValid,
+            userPublicDataRequest.ValidFrom,
+            userPublicDataRequest.ValidTo
+        );
+
+        await repository.AddAsync(userPublicData);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return true;
+
     }
 
     public async Task<bool> SaveDailyRunAsync(
@@ -55,45 +52,35 @@ public sealed record TransactionService : ITransactionService
         CancellationToken ct = default
     )
     {
-        try
+        var repository = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
+        var todayStartUtc = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero);
+        var tomorrowStartUtc = todayStartUtc.AddDays(1);
+
+        var isExist = await repository.CountAsync(
+            x =>
+                x.DomainId == saveDailyRunRequest.DomainId &&
+                x.Version == saveDailyRunRequest.Version &&
+                x.IPAddress == saveDailyRunRequest.IpAddress &&
+                x.CreatedAt >= todayStartUtc &&
+                x.CreatedAt < tomorrowStartUtc,
+            ct: ct
+        );
+
+        if (isExist > 0)
         {
-
-            var repository = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
-            var todayStartUtc = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero);
-            var tomorrowStartUtc = todayStartUtc.AddDays(1);
-
-
-            var isExist = await repository.CountAsync(
-                x =>
-                    x.DomainId == saveDailyRunRequest.domainId &&
-                    x.Version == saveDailyRunRequest.version &&
-                    x.IPAddress == saveDailyRunRequest.ipAddress &&
-                    x.CreatedAt >= todayStartUtc &&
-                    x.CreatedAt < tomorrowStartUtc,
-                ct: ct
-            );
-
-            if (isExist > 0)
-            {
-                return true;
-            }
-            var dailyRunLog = HastaksharSewaDailyRunLog.Create(
-               saveDailyRunRequest.domainId,
-               saveDailyRunRequest.ipAddress,
-               saveDailyRunRequest.version,
-               saveDailyRunRequest.runOnDate,
-               saveDailyRunRequest.createdBy
-            );
-
-            await repository.AddAsync(dailyRunLog, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
             return true;
         }
-        catch (Exception)
-        {
+        var dailyRunLog = HastaksharSewaDailyRunLog.Create(
+           saveDailyRunRequest.DomainId,
+           saveDailyRunRequest.IpAddress,
+           saveDailyRunRequest.Version,
+           saveDailyRunRequest.RunOnDate,
+           saveDailyRunRequest.CreatedBy
+        );
 
-            throw;
-        }
+        await repository.AddAsync(dailyRunLog, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+        return true;
     }
 
     public async Task<bool> SaveInstallationAsync(
@@ -101,39 +88,31 @@ public sealed record TransactionService : ITransactionService
        CancellationToken ct = default
     )
     {
-        try
+        var repository = _unitOfWork.Repository<HastaksharSewaInstallation, int>();
+        var IsExist = await repository.CountAsync(
+            x => x.DomainId == saveInstallationRquest.DomainId && x.Version == saveInstallationRquest.Version && x.IPAddress == saveInstallationRquest.IpAddress,
+            ct: ct
+        );
+        if (IsExist > 0)
         {
-            var repository = _unitOfWork.Repository<HastaksharSewaInstallation, int>();
-            var IsExist = await repository.CountAsync(
-                x => x.DomainId == saveInstallationRquest.domainId && x.Version == saveInstallationRquest.version && x.IPAddress == saveInstallationRquest.ipAddress,
-                ct: ct
-            );
-            if (IsExist > 0)
-            {
-                return true;
-            }
-            var installation = HastaksharSewaInstallation.Create(
-               saveInstallationRquest.domainId,
-               saveInstallationRquest.ipAddress,
-               saveInstallationRquest.version
-            );
-
-            await repository.AddAsync(installation, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
             return true;
         }
-        catch (Exception)
-        {
+        var installation = HastaksharSewaInstallation.Create(
+           saveInstallationRquest.DomainId,
+           saveInstallationRquest.IpAddress,
+           saveInstallationRquest.Version
+        );
 
-            throw;
-        }
+        await repository.AddAsync(installation, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+        return true;
     }
 
     public async Task<List<XmlDataForPublicKeyResponse>> SearchVaultMastersBySerialAsync(string term, CancellationToken ct)
     {
         term = (term ?? "").Trim();
         if (term.Length == 0) return new List<XmlDataForPublicKeyResponse>();
-         
+
         var repo = _unitOfWork.Repository<VaultMaster, int>();
         var list = await repo.GetListAsync(
             selector: x => new XmlDataForPublicKeyResponse
@@ -149,7 +128,7 @@ public sealed record TransactionService : ITransactionService
             orderBy: q => q.OrderBy(x => x.SerialNo),
             cancellationToken: ct
         );
-         
+
         return list.Take(20).ToList();
     }
 }

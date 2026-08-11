@@ -38,7 +38,7 @@ public sealed class AuthController : Controller
     {
 
         ViewData["ReturnUrl"] = returnUrl;
-        string dd = AESEncrytDecry.GetSalt();
+        string dd = AesEncrytDecry.GetSalt();
         HttpContext.Session.SetString(SessionKeySalt, dd);
         ViewBag.hdns = dd;
         return View();
@@ -84,8 +84,8 @@ public sealed class AuthController : Controller
                 return View();
             }
 
-            username = AESEncrytDecry.DecryptAES(username.Trim(), salt);
-            password = AESEncrytDecry.DecryptAES(password.Trim(), salt);
+            username = AesEncrytDecry.DecryptAES(username.Trim(), salt);
+            password = AesEncrytDecry.DecryptAES(password.Trim(), salt);
 
             if (!Regex.IsMatch(username, @"^[a-zA-Z0-9_]+$"))
             {
@@ -252,7 +252,7 @@ public sealed class AuthController : Controller
     [HttpGet, AllowAnonymous]
     public IActionResult Register()
     {
-        string dd = AESEncrytDecry.GetSalt();
+        string dd = AesEncrytDecry.GetSalt();
         HttpContext.Session.SetString(SessionKeySalt, dd);
         ViewBag.hdns = dd;
         return View(new RegisterVm());
@@ -298,9 +298,9 @@ public sealed class AuthController : Controller
 
             var model = new RegisterVm
             {
-                Username = AESEncrytDecry.DecryptAES(encryptedModel.Username.Trim(), salt),
-                Password = AESEncrytDecry.DecryptAES(encryptedModel.Password.Trim(), salt),
-                ConfirmPassword = AESEncrytDecry.DecryptAES(encryptedModel.ConfirmPassword.Trim(), salt)
+                Username = AesEncrytDecry.DecryptAES(encryptedModel.Username.Trim(), salt),
+                Password = AesEncrytDecry.DecryptAES(encryptedModel.Password.Trim(), salt),
+                ConfirmPassword = AesEncrytDecry.DecryptAES(encryptedModel.ConfirmPassword.Trim(), salt)
             };
 
             if (!Regex.IsMatch(model.Username ?? "", @"^[a-zA-Z0-9._-]+$"))

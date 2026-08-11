@@ -5,11 +5,11 @@ namespace HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
 public interface ITransactionService
 {
     Task<bool?> SaveVaultMasterData(
-        SaveUserPublicDataRequest publicKeyDataRequest,
+        SaveUserPublicDataRequest userPublicDataRequest,
         CancellationToken cancellationToken = default
         );
     Task<bool> SaveDailyRunAsync(
-        SaveDailyRunRequest logDailyRunRequest,
+        SaveDailyRunRequest saveDailyRunRequest,
         CancellationToken ct = default
         );
     Task<bool> SaveInstallationAsync(
