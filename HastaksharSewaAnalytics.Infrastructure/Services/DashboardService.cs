@@ -28,7 +28,7 @@ public sealed record DashboardService : IDashboardService
                 x.RunOnDate
             },
             predicate: p => p.RunOnDate >= todayUtc && p.RunOnDate < tomorrowUtc,
-            orderBy: q => q.OrderByDescending(x => x.RunOnDate),
+            orderBy: q => q.OrderByDescending(x => x.Id),
             cancellationToken: cancellationToken
         );
 
@@ -58,7 +58,7 @@ public sealed record DashboardService : IDashboardService
                 x.InstallDate
             },
             predicate: null,
-            orderBy: q => q.OrderByDescending(x => x.InstallDate),
+            orderBy: q => q.OrderByDescending(x => x.Id),
             cancellationToken: cancellationToken
         );
 
@@ -117,7 +117,7 @@ public sealed record DashboardService : IDashboardService
                 x.CreatedAt
             },
             predicate: null,
-            orderBy: q => q.OrderByDescending(x => x.CreatedAt),
+            orderBy: q => q.OrderByDescending(x => x.Id),
             cancellationToken: cancellationToken
         );
 
@@ -165,7 +165,7 @@ public sealed record DashboardService : IDashboardService
                 x.CreatedAt
             },
             predicate: null,
-            orderBy: null,
+            orderBy: o=>o.OrderByDescending(x=>x.Id),
             cancellationToken: cancellationToken
         );
 

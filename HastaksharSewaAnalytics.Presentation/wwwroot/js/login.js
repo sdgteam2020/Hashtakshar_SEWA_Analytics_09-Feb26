@@ -31,13 +31,31 @@ function bindToggle(btnId, inputId) {
 
 bindToggle("togglePasswordBtn", "loginPassword");
 
+const passwordInput = document.getElementById("loginPassword");
+
+passwordInput.addEventListener("copy", function (e) {
+    e.preventDefault();
+});
+
+passwordInput.addEventListener("cut", function (e) {
+    e.preventDefault();
+});
+
+passwordInput.addEventListener("paste", function (e) {
+    e.preventDefault();
+});
+
+passwordInput.addEventListener("drop", function (e) {
+    e.preventDefault();
+});
+
 usernameInput.addEventListener("input", function () {
     let value = this.value;
 
-    
+
     value = value.replaceAll(/\W/g, "");
 
-    
+
     let underscoreCount = 0;
     value = value.replaceAll(/_/g, (match) => {
         underscoreCount++;
@@ -57,15 +75,18 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     const username = document.getElementById("loginUsername").value;
     const password = document.getElementById("loginPassword").value;
-     
+
     const encryptedUsername = encryptData(username);
     const encryptedPassword = encryptData(password);
-     
+
+    document.getElementById("loginUsername").value = encryptedUsername;
+    document.getElementById("loginPassword").value = encryptedPassword;
+
     const formData = new FormData(form);
-     
+
     formData.set("Username", encryptedUsername);
     formData.set("Password", encryptedPassword);
-     
+
     const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
 
     try {
@@ -81,14 +102,14 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         });
 
         const contentType = res.headers.get("content-type") || "";
-         
+
         const data = contentType.includes("application/json") ? await res.json() : null;
 
         if (!res.ok) {
             toastr.error(data?.message || "Login failed.");
             return;
         }
-         
+
         toastr.success(data?.message || "Login successful.");
 
         setTimeout(() => {

@@ -178,7 +178,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd", policy =>
     {
-        policy.WithOrigins("https://localhost:7018", "https://192.168.10.41","https://192.168.10.251")
+        policy.WithOrigins("https://localhost:7018", "https://192.168.10.41","https://192.168.10.251", "https://hastaksharsewa.army.mil/")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -229,7 +229,8 @@ var allowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 {
     "192.168.10.41",
     "192.168.10.251",
-    "localhost"     
+    "localhost",
+    "hastaksharsewa.army.mil"
 };
 
 app.Use(async (ctx, next) =>
