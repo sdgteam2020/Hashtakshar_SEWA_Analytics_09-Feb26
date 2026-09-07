@@ -6,6 +6,15 @@
     return response.json();
 }
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 async function loadDashboardCounts() {
     try {
         const applicationsEl = document.querySelector('[data-count="applications"]');
@@ -88,10 +97,10 @@ $(function () {
                             return meta.row + 1;
                         }
                     },
-                    { data: 'domainId' },
-                    { data: 'ipAddress' },
-                    { data: 'version' },
-                    { data: 'installDate' }
+                    { data: 'domainId', render: $.fn.dataTable.render.text() },
+                    { data: 'ipAddress', render: $.fn.dataTable.render.text() },
+                    { data: 'version', render: $.fn.dataTable.render.text() },
+                    { data: 'installDate', render: $.fn.dataTable.render.text() }
                 ],
                 pageLength: 10,
                 responsive: true,
@@ -137,10 +146,10 @@ $(function () {
                             return meta.row + 1;
                         }
                     },
-                    { data: 'domainId' },
-                    { data: 'ipAddress' },
-                    { data: 'version' },
-                    { data: 'installDate' }
+                    { data: 'domainId', render: $.fn.dataTable.render.text() },
+                    { data: 'ipAddress', render: $.fn.dataTable.render.text() },
+                    { data: 'version', render: $.fn.dataTable.render.text() },
+                    { data: 'installDate', render: $.fn.dataTable.render.text() }
                 ],
                 pageLength: 10,
                 responsive: true,
@@ -180,18 +189,33 @@ $(function () {
                 logsTable.ajax.reload(null, false);
             } else {
                 logsTable = $('#tblClientErrorLogs').DataTable({
-                    ajax: { url: '/Dashboard/getclienterrorlogsdata', type: 'GET', dataSrc: '' },
+                    processing: true,
+                    serverSide: true,
+                    searching: true,
+                    ordering: false,
+                    searchDelay: 500,
+                    pageLength: 10,
+
+                    ajax: {
+                        url: '/Dashboard/getclienterrorlogsdata',
+                        type: 'GET',
+                        dataSrc: 'data',
+                        data: function (d) {
+                            d.searchValue = d.search.value;
+                        }
+                    },
+
                     columns: [
                         {
                             data: null,
                             render: function (data, type, row, meta) {
-                                return meta.row + 1;
+                                return meta.settings._iDisplayStart + meta.row + 1;
                             }
                         },
-                        { data: 'ipAddress', defaultContent: '-' },
-                        { data: 'machineName', defaultContent: '-' },
-                        { data: 'userName', defaultContent: '-' },
-                        { data: 'operatingSystem', defaultContent: '-' },
+                        { data: 'ipAddress', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                        { data: 'machineName', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                        { data: 'userName', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                        { data: 'operatingSystem', defaultContent: '-', render: $.fn.dataTable.render.text() },
                         {
                             data: 'is64Bit',
                             render: function (v) {
@@ -199,28 +223,39 @@ $(function () {
                             },
                             defaultContent: '-'
                         },
-                        { data: 'systemDirectory', defaultContent: '-' },
-                        { data: 'appVersion', defaultContent: '-' },
+                        { data: 'systemDirectory', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                        { data: 'appVersion', defaultContent: '-', render: $.fn.dataTable.render.text() },
                         {
                             data: 'errorMessage',
                             defaultContent: '-',
-                            render: function (v) {
+                            render: function (v, type) {
                                 if (!v) {
                                     return '-';
                                 }
-                                return v.length > 60 ? `${v.substring(0, 60)}...` : v;
+
+                                const value = String(v);
+                                if (type !== 'display') {
+                                    return value;
+                                }
+
+                                const shortened = value.length > 60 ? `${value.substring(0, 60)}...` : value;
+                                return escapeHtml(shortened);
                             }
                         },
                         {
                             data: 'loggedAt',
                             defaultContent: '-',
-                            render: function (v) {
+                            render: function (v, type) {
                                 if (!v) {
                                     return '-';
                                 }
 
+                                if (type !== 'display') {
+                                    return v;
+                                }
+
                                 const dt = new Date(v);
-                                return Number.isNaN(dt.getTime()) ? v : dt.toLocaleString();
+                                return Number.isNaN(dt.getTime()) ? escapeHtml(v) : escapeHtml(dt.toLocaleString());
                             }
                         },
                         {
@@ -238,7 +273,6 @@ $(function () {
                             }
                         }
                     ],
-                    pageLength: 10,
                     responsive: true,
                     autoWidth: false,
                     scrollX: true,
@@ -312,7 +346,8 @@ $(function () {
                     },
                     {
                         data: 'serialNo',
-                        defaultContent: '-'
+                        defaultContent: '-',
+                        render: $.fn.dataTable.render.text()
                     },
                     {
                         data: 'tokenValid',
@@ -322,17 +357,22 @@ $(function () {
                                 : '<span class="badge rounded-pill text-bg-danger">Inactive</span>';
                         }
                     },
-                    { data: 'validFrom', defaultContent: '-' },
-                    { data: 'validTo', defaultContent: '-' },
-                    { data: 'createdAt', defaultContent: '-' },
+                    { data: 'validFrom', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'validTo', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'createdAt', defaultContent: '-', render: $.fn.dataTable.render.text() },
                     {
                         data: 'public_Key',
                         defaultContent: '-',
-                        render: function (v) {
+                        render: function (v, type) {
                             if (!v) {
                                 return '-';
                             }
-                            return `<span class="text-truncate d-inline-block publicKeyStatus">${v}</span>`;
+
+                            if (type !== 'display') {
+                                return v;
+                            }
+
+                            return `<span class="text-truncate d-inline-block publicKeyStatus">${escapeHtml(v)}</span>`;
                         }
                     },
                     {
@@ -415,10 +455,10 @@ $(function () {
                             return meta.row + 1;
                         }
                     },
-                    { data: 'userPublicDataId' },
-                    { data: 'documentName' },
-                    { data: 'signedAt' },
-                    { data: 'ipAddress' }
+                    { data: 'userPublicDataId', render: $.fn.dataTable.render.text() },
+                    { data: 'documentName', render: $.fn.dataTable.render.text() },
+                    { data: 'signedAt', render: $.fn.dataTable.render.text() },
+                    { data: 'ipAddress', render: $.fn.dataTable.render.text() }
                 ],
                 pageLength: 10,
                 responsive: true,

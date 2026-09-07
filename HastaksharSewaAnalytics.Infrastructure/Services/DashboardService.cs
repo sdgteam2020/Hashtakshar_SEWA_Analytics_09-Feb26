@@ -2,6 +2,7 @@
 using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
 using HastaksharSewaAnalytics.Application.Dtos.Dashboard;
 using HastaksharSewaAnalytics.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace HastaksharSewaAnalytics.Infrastructure.Services;
 
@@ -94,13 +95,43 @@ public sealed record DashboardService : IDashboardService
         return await repo.CountAsync(null, cancellationToken);
     }
 
-    public async Task<List<GetClientErrorLogsResponse>> GetClientErrorLogsData(
+    public async Task<(List<GetClientErrorLogsResponse> Data, int TotalCount, int FilteredCount)> GetClientErrorLogsData(
+    int start,
+    int length,
+    string? searchValue,
     CancellationToken cancellationToken = default)
     {
+        start = Math.Max(start, 0);
+        length = Math.Clamp(length, 1, 100);
+
         var repo = _unitOfWork.Repository<ClientErrorLog, int>();
 
-        var rows = await repo.GetListAsync(
-            selector: x => new
+        var query = repo.Query();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(searchValue))
+        {
+            var search = searchValue.Trim();
+
+            query = query.Where(x =>
+                (x.IpAddress != null && x.IpAddress.Contains(search)) ||
+                (x.MachineName != null && x.MachineName.Contains(search)) ||
+                (x.UserName != null && x.UserName.Contains(search)) ||
+                (x.OperatingSystem != null && x.OperatingSystem.Contains(search)) ||
+                (x.SystemDirectory != null && x.SystemDirectory.Contains(search)) ||
+                (x.AppVersion != null && x.AppVersion.Contains(search)) ||
+                (x.ErrorMessage != null && x.ErrorMessage.Contains(search))
+            );
+        }
+
+        var filteredCount = await query.CountAsync(cancellationToken);
+
+        var rows = await query
+            .OrderByDescending(x => x.Id)
+            .Skip(start)
+            .Take(length)
+            .Select(x => new
             {
                 x.Id,
                 x.AppName,
@@ -115,15 +146,12 @@ public sealed record DashboardService : IDashboardService
                 x.AppVersion,
                 x.Extra,
                 x.CreatedAt
-            },
-            predicate: null,
-            orderBy: q => q.OrderByDescending(x => x.Id),
-            cancellationToken: cancellationToken
-        );
+            })
+            .ToListAsync(cancellationToken);
 
         var istOffset = TimeSpan.FromHours(5.5);
 
-        return [.. rows.Select(x => new GetClientErrorLogsResponse(
+        var data = rows.Select(x => new GetClientErrorLogsResponse(
             x.Id,
             x.AppName,
             x.ErrorMessage!,
@@ -137,7 +165,9 @@ public sealed record DashboardService : IDashboardService
             x.AppVersion!,
             x.Extra!,
             x.CreatedAt.ToOffset(istOffset).ToString("dd-MM-yyyy HH:mm")
-        ))];
+        )).ToList();
+
+        return (data, totalCount, filteredCount);
     }
 
 
@@ -165,7 +195,7 @@ public sealed record DashboardService : IDashboardService
                 x.CreatedAt
             },
             predicate: null,
-            orderBy: o=>o.OrderByDescending(x=>x.Id),
+            orderBy: o => o.OrderByDescending(x => x.Id),
             cancellationToken: cancellationToken
         );
 

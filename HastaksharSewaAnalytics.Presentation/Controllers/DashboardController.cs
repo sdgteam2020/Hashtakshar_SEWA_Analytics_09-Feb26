@@ -110,20 +110,50 @@ public sealed class DashboardController : Controller
     }
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetClientErrorLogsData([FromHeader(Name = "X-Requested-With")] string xrw)
+    public async Task<IActionResult> GetClientErrorLogsData(
+     [FromHeader(Name = "X-Requested-With")] string xrw,
+     int draw = 1,
+     int start = 0,
+     int length = 10,
+     string? searchValue = null,
+     CancellationToken cancellationToken = default)
     {
         try
         {
             if (xrw != "XMLHttpRequest")
                 return Forbid();
-            var data = await _dashboardRepository.GetClientErrorLogsData();
-            return Json(data);
+
+            start = Math.Max(start, 0);
+            length = Math.Clamp(length, 1, 100);
+
+            var result = await _dashboardRepository.GetClientErrorLogsData(
+                start,
+                length,
+                searchValue,
+                cancellationToken);
+
+            return Json(new
+            {
+                draw,
+                recordsTotal = result.TotalCount,
+                recordsFiltered = result.FilteredCount,
+                data = result.Data
+            });
         }
         catch (Exception ex)
         {
-            ErrorLog.LogErrorToFile(ex, "An error occurred while fetching client error logs data.");
+            ErrorLog.LogErrorToFile(
+                ex,
+                "An error occurred while fetching client error logs data.");
+
+            return Json(new
+            {
+                draw,
+                recordsTotal = 0,
+                recordsFiltered = 0,
+                data = Array.Empty<object>()
+            });
         }
-        return Json(new { });
     }
 
     [HttpGet]
