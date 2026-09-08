@@ -18,7 +18,7 @@ function escapeHtml(value) {
 function serverSideAjax(url) {
     return {
         url: url,
-        type: 'GET',
+        type: 'POST',
         dataSrc: 'data',
         data: function (d) {
             d.searchValue = d.search && d.search.value ? d.search.value : '';

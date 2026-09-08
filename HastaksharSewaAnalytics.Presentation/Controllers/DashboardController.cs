@@ -59,7 +59,7 @@ public sealed class DashboardController : Controller
         return Json(new { todayUsers = count });
     }
 
-    [HttpGet]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> GetApplications(
         [FromHeader(Name = "X-Requested-With")] string xrw,
@@ -89,7 +89,7 @@ public sealed class DashboardController : Controller
         }
     }
 
-    [HttpGet]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> GetTodayUsers(
         [FromHeader(Name = "X-Requested-With")] string xrw,
@@ -140,7 +140,7 @@ public sealed class DashboardController : Controller
         return Json(new { clientErrorLogsCount = count });
     }
 
-    [HttpGet]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> GetClientErrorLogsData(
         [FromHeader(Name = "X-Requested-With")] string xrw,
@@ -191,7 +191,7 @@ public sealed class DashboardController : Controller
         return Json(new { vaultDataCount = count });
     }
 
-    [HttpGet]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> GetVaultMasterData(
         [FromHeader(Name = "X-Requested-With")] string xrw,
@@ -241,7 +241,7 @@ public sealed class DashboardController : Controller
         }
     }
 
-    [HttpGet]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> GetDigitalSignList(
         [FromHeader(Name = "X-Requested-With")] string xrw,
