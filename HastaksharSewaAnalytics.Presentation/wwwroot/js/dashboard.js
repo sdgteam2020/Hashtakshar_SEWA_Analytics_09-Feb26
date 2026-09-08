@@ -15,6 +15,21 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function serverSideAjax(url) {
+    return {
+        url: url,
+        type: 'GET',
+        dataSrc: 'data',
+        data: function (d) {
+            d.searchValue = d.search && d.search.value ? d.search.value : '';
+        }
+    };
+}
+
+function rowNumber(meta) {
+    return meta.settings._iDisplayStart + meta.row + 1;
+}
+
 async function loadDashboardCounts() {
     try {
         const applicationsEl = document.querySelector('[data-count="applications"]');
@@ -23,13 +38,7 @@ async function loadDashboardCounts() {
         const vaultEl = document.querySelector('[data-count="vaultmaster"]');
         const signedEl = document.querySelector('[data-count="signed"]');
 
-        const [
-            totalInstallData,
-            todayUserData,
-            logsData,
-            vaultData,
-            signData
-        ] = await Promise.all([
+        const [totalInstallData, todayUserData, logsData, vaultData, signData] = await Promise.all([
             fetchJson('/Dashboard/TotalInstallCount'),
             fetchJson('/Dashboard/TodayUserCount'),
             fetchJson('/Dashboard/GetClientErrorLogsCount'),
@@ -37,25 +46,11 @@ async function loadDashboardCounts() {
             fetchJson('/Dashboard/GetDigitalSignCount')
         ]);
 
-        if (applicationsEl) {
-            applicationsEl.textContent = totalInstallData.totalInstallations ?? '0';
-        }
-
-        if (usersEl) {
-            usersEl.textContent = todayUserData.todayUsers ?? '0';
-        }
-
-        if (logsEl) {
-            logsEl.textContent = logsData.clientErrorLogsCount ?? '0';
-        }
-
-        if (vaultEl) {
-            vaultEl.textContent = vaultData.vaultDataCount ?? '0';
-        }
-
-        if (signedEl) {
-            signedEl.textContent = signData.digitalSignCount ?? '0';
-        }
+        if (applicationsEl) applicationsEl.textContent = totalInstallData.totalInstallations ?? '0';
+        if (usersEl) usersEl.textContent = todayUserData.todayUsers ?? '0';
+        if (logsEl) logsEl.textContent = logsData.clientErrorLogsCount ?? '0';
+        if (vaultEl) vaultEl.textContent = vaultData.vaultDataCount ?? '0';
+        if (signedEl) signedEl.textContent = signData.digitalSignCount ?? '0';
     } catch (error) {
         console.error('Failed to load dashboard counts.', error);
     }
@@ -73,12 +68,9 @@ $(function () {
 
         if (el) {
             const existing = bootstrap.Modal.getInstance(el);
-            if (existing) {
-                existing.dispose();
-            }
+            if (existing) existing.dispose();
 
-            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
-            modal.show();
+            new bootstrap.Modal(el, { backdrop: 'static', keyboard: false }).show();
         } else {
             console.error('Modal not found. Render the partial first.');
         }
@@ -89,20 +81,25 @@ $(function () {
             appsTable.ajax.reload(null, false);
         } else {
             appsTable = $('#tblApplications').DataTable({
-                ajax: { url: '/Dashboard/GetApplications', type: 'GET', dataSrc: '' },
+                processing: true,
+                serverSide: true,
+                searching: true,
+                ordering: false,
+                searchDelay: 500,
+                pageLength: 10,
+                ajax: serverSideAjax('/Dashboard/GetApplications'),
                 columns: [
                     {
                         data: null,
                         render: function (data, type, row, meta) {
-                            return meta.row + 1;
+                            return rowNumber(meta);
                         }
                     },
-                    { data: 'domainId', render: $.fn.dataTable.render.text() },
-                    { data: 'ipAddress', render: $.fn.dataTable.render.text() },
-                    { data: 'version', render: $.fn.dataTable.render.text() },
-                    { data: 'installDate', render: $.fn.dataTable.render.text() }
+                    { data: 'domainId', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'ipAddress', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'version', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'installDate', defaultContent: '-', render: $.fn.dataTable.render.text() }
                 ],
-                pageLength: 10,
                 responsive: true,
                 autoWidth: false,
                 dom: '<"row mb-2"<"col-sm-6"l><"col-sm-6"f>>t<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
@@ -122,12 +119,9 @@ $(function () {
 
         if (el) {
             const existing = bootstrap.Modal.getInstance(el);
-            if (existing) {
-                existing.dispose();
-            }
+            if (existing) existing.dispose();
 
-            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
-            modal.show();
+            new bootstrap.Modal(el, { backdrop: 'static', keyboard: false }).show();
         } else {
             console.error('Modal not found. Render the partial first.');
         }
@@ -138,20 +132,25 @@ $(function () {
             usersTable.ajax.reload(null, false);
         } else {
             usersTable = $('#tblTodayUsers').DataTable({
-                ajax: { url: '/Dashboard/GetTodayUsers', type: 'GET', dataSrc: '' },
+                processing: true,
+                serverSide: true,
+                searching: true,
+                ordering: false,
+                searchDelay: 500,
+                pageLength: 10,
+                ajax: serverSideAjax('/Dashboard/GetTodayUsers'),
                 columns: [
                     {
                         data: null,
                         render: function (data, type, row, meta) {
-                            return meta.row + 1;
+                            return rowNumber(meta);
                         }
                     },
-                    { data: 'domainId', render: $.fn.dataTable.render.text() },
-                    { data: 'ipAddress', render: $.fn.dataTable.render.text() },
-                    { data: 'version', render: $.fn.dataTable.render.text() },
-                    { data: 'installDate', render: $.fn.dataTable.render.text() }
+                    { data: 'domainId', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'ipAddress', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'version', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'installDate', defaultContent: '-', render: $.fn.dataTable.render.text() }
                 ],
-                pageLength: 10,
                 responsive: true,
                 autoWidth: false,
                 dom: '<"row mb-2"<"col-sm-6"l><"col-sm-6"f>>t<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
@@ -171,12 +170,9 @@ $(function () {
 
         if (el) {
             const existing = bootstrap.Modal.getInstance(el);
-            if (existing) {
-                existing.dispose();
-            }
+            if (existing) existing.dispose();
 
-            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
-            modal.show();
+            new bootstrap.Modal(el, { backdrop: 'static', keyboard: false }).show();
         } else {
             console.error('Modal not found. Render the partial first.');
         }
@@ -195,21 +191,12 @@ $(function () {
                     ordering: false,
                     searchDelay: 500,
                     pageLength: 10,
-
-                    ajax: {
-                        url: '/Dashboard/getclienterrorlogsdata',
-                        type: 'GET',
-                        dataSrc: 'data',
-                        data: function (d) {
-                            d.searchValue = d.search.value;
-                        }
-                    },
-
+                    ajax: serverSideAjax('/Dashboard/GetClientErrorLogsData'),
                     columns: [
                         {
                             data: null,
                             render: function (data, type, row, meta) {
-                                return meta.settings._iDisplayStart + meta.row + 1;
+                                return rowNumber(meta);
                             }
                         },
                         { data: 'ipAddress', defaultContent: '-', render: $.fn.dataTable.render.text() },
@@ -229,14 +216,10 @@ $(function () {
                             data: 'errorMessage',
                             defaultContent: '-',
                             render: function (v, type) {
-                                if (!v) {
-                                    return '-';
-                                }
+                                if (!v) return '-';
 
                                 const value = String(v);
-                                if (type !== 'display') {
-                                    return value;
-                                }
+                                if (type !== 'display') return value;
 
                                 const shortened = value.length > 60 ? `${value.substring(0, 60)}...` : value;
                                 return escapeHtml(shortened);
@@ -246,13 +229,8 @@ $(function () {
                             data: 'loggedAt',
                             defaultContent: '-',
                             render: function (v, type) {
-                                if (!v) {
-                                    return '-';
-                                }
-
-                                if (type !== 'display') {
-                                    return v;
-                                }
+                                if (!v) return '-';
+                                if (type !== 'display') return v;
 
                                 const dt = new Date(v);
                                 return Number.isNaN(dt.getTime()) ? escapeHtml(v) : escapeHtml(dt.toLocaleString());
@@ -295,12 +273,9 @@ $(function () {
             $('#ced_extra').text(data.extra || '-');
 
             const existing = bootstrap.Modal.getInstance(el);
-            if (existing) {
-                existing.dispose();
-            }
+            if (existing) existing.dispose();
 
-            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: true });
-            modal.show();
+            new bootstrap.Modal(el, { backdrop: 'static', keyboard: true }).show();
         } else {
             console.error('Detail modal not found.');
         }
@@ -315,12 +290,9 @@ $(function () {
 
         if (el) {
             const existing = bootstrap.Modal.getInstance(el);
-            if (existing) {
-                existing.dispose();
-            }
+            if (existing) existing.dispose();
 
-            const modal = new bootstrap.Modal(el, { backdrop: 'static', keyboard: false });
-            modal.show();
+            new bootstrap.Modal(el, { backdrop: 'static', keyboard: false }).show();
         } else {
             console.error('Modal not found. Render the partial first.');
         }
@@ -331,8 +303,13 @@ $(function () {
             pkvTable.ajax.reload(null, false);
         } else {
             pkvTable = $('#tblVaultMaster').DataTable({
-                ajax: { url: '/Dashboard/GetVaultMasterData', type: 'GET', dataSrc: '' },
+                processing: true,
+                serverSide: true,
+                searching: true,
+                ordering: false,
+                searchDelay: 500,
                 pageLength: 10,
+                ajax: serverSideAjax('/Dashboard/GetVaultMasterData'),
                 responsive: true,
                 autoWidth: false,
                 scrollX: true,
@@ -341,14 +318,10 @@ $(function () {
                     {
                         data: null,
                         render: function (data, type, row, meta) {
-                            return meta.row + 1;
+                            return rowNumber(meta);
                         }
                     },
-                    {
-                        data: 'serialNo',
-                        defaultContent: '-',
-                        render: $.fn.dataTable.render.text()
-                    },
+                    { data: 'serialNo', defaultContent: '-', render: $.fn.dataTable.render.text() },
                     {
                         data: 'tokenValid',
                         render: function (v) {
@@ -364,13 +337,8 @@ $(function () {
                         data: 'public_Key',
                         defaultContent: '-',
                         render: function (v, type) {
-                            if (!v) {
-                                return '-';
-                            }
-
-                            if (type !== 'display') {
-                                return v;
-                            }
+                            if (!v) return '-';
+                            if (type !== 'display') return v;
 
                             return `<span class="text-truncate d-inline-block publicKeyStatus">${escapeHtml(v)}</span>`;
                         }
@@ -381,11 +349,7 @@ $(function () {
                         searchable: false,
                         render: function (row) {
                             const safeKey = encodeURIComponent(row.public_Key || '');
-                            return `
-                                <button type="button" class="btn btn-sm btn-outline-light pkv-view" data-key="${safeKey}">
-                                    View
-                                </button>
-                            `;
+                            return `<button type="button" class="btn btn-sm btn-outline-light pkv-view" data-key="${safeKey}">View</button>`;
                         }
                     }
                 ],
@@ -404,9 +368,7 @@ $(function () {
 
         if (el) {
             const existing = bootstrap.Modal.getInstance(el);
-            if (existing) {
-                existing.dispose();
-            }
+            if (existing) existing.dispose();
 
             new bootstrap.Modal(el, { backdrop: 'static', keyboard: true }).show();
         } else {
@@ -435,8 +397,7 @@ $(function () {
         const el = document.getElementById('digitalSignDetailsModal');
 
         if (el) {
-            const modal = bootstrap.Modal.getOrCreateInstance(el, { backdrop: 'static', keyboard: false });
-            modal.show();
+            bootstrap.Modal.getOrCreateInstance(el, { backdrop: 'static', keyboard: false }).show();
         } else {
             console.error('Modal not found. Render the partial first.');
         }
@@ -447,20 +408,25 @@ $(function () {
             $('#tblDigitalSignDetails').DataTable().ajax.reload(null, false);
         } else {
             $('#tblDigitalSignDetails').DataTable({
-                ajax: { url: '/Dashboard/GetDigitalSignList', type: 'GET', dataSrc: '' },
+                processing: true,
+                serverSide: true,
+                searching: true,
+                ordering: false,
+                searchDelay: 500,
+                pageLength: 10,
+                ajax: serverSideAjax('/Dashboard/GetDigitalSignList'),
                 columns: [
                     {
                         data: null,
                         render: function (data, type, row, meta) {
-                            return meta.row + 1;
+                            return rowNumber(meta);
                         }
                     },
-                    { data: 'userPublicDataId', render: $.fn.dataTable.render.text() },
-                    { data: 'documentName', render: $.fn.dataTable.render.text() },
-                    { data: 'signedAt', render: $.fn.dataTable.render.text() },
-                    { data: 'ipAddress', render: $.fn.dataTable.render.text() }
+                    { data: 'userPublicDataId', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'documentName', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'signedAt', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                    { data: 'ipAddress', defaultContent: '-', render: $.fn.dataTable.render.text() }
                 ],
-                pageLength: 10,
                 responsive: true,
                 autoWidth: false,
                 dom: '<"row mb-2"<"col-sm-6"l><"col-sm-6"f>>t<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',

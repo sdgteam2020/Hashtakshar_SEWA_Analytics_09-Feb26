@@ -21,23 +21,70 @@ public sealed record DigitalSignService : IDigitalSignService
             .CountAsync(null, cancellationToken);
     }
 
-    public async Task<List<GetDigitalSignRespone>> GetDigitalSignListAsync(CancellationToken cancellationToken = default)
+    public async Task<(List<GetDigitalSignRespone> Data, int TotalCount, int FilteredCount)> GetDigitalSignListAsync(
+        int start,
+        int length,
+        string? searchValue,
+        CancellationToken cancellationToken = default)
     {
+        start = Math.Max(start, 0);
+        length = Math.Clamp(length, 1, 100);
+
         var digitalSign = _UoW.Repository<DigitalSignDetail, int>().Query();
         var userData = _UoW.Repository<VaultMaster, int>().Query();
-        var data = await (from ds in digitalSign
-                          join ud in userData on ds.ValtMasterId equals ud.Id
-                          orderby ds.Id descending
-                          select new GetDigitalSignRespone
-                          (
-                              ds.Id,
-                              ds.ValtMasterId,
-                              ds.DocumentName!,
-                              ds.SignDateTime!,
-                              ds.IpAddress!
-                          )).ToListAsync(cancellationToken);
 
-        return data;
+        var query = from ds in digitalSign
+                    join ud in userData on ds.ValtMasterId equals ud.Id
+                    select new
+                    {
+                        ds.Id,
+                        ds.ValtMasterId,
+                        ds.DocumentName,
+                        ds.SignDateTime,
+                        ds.IpAddress
+                    };
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(searchValue))
+        {
+            var search = searchValue.Trim();
+            var pattern = $"%{search}%";
+
+            if (int.TryParse(search, out var userPublicDataId))
+            {
+                query = query.Where(x =>
+                    x.ValtMasterId == userPublicDataId ||
+                    (x.DocumentName != null && EF.Functions.ILike(x.DocumentName, pattern)) ||
+                    (x.SignDateTime != null && EF.Functions.ILike(x.SignDateTime, pattern)) ||
+                    (x.IpAddress != null && EF.Functions.ILike(x.IpAddress, pattern)));
+            }
+            else
+            {
+                query = query.Where(x =>
+                    (x.DocumentName != null && EF.Functions.ILike(x.DocumentName, pattern)) ||
+                    (x.SignDateTime != null && EF.Functions.ILike(x.SignDateTime, pattern)) ||
+                    (x.IpAddress != null && EF.Functions.ILike(x.IpAddress, pattern)));
+            }
+        }
+
+        var filteredCount = await query.CountAsync(cancellationToken);
+
+        var rows = await query
+            .OrderByDescending(x => x.Id)
+            .Skip(start)
+            .Take(length)
+            .ToListAsync(cancellationToken);
+
+        var data = rows.Select(x => new GetDigitalSignRespone(
+            x.Id,
+            x.ValtMasterId,
+            x.DocumentName!,
+            x.SignDateTime!,
+            x.IpAddress!
+        )).ToList();
+
+        return (data, totalCount, filteredCount);
     }
 
     public async Task<bool> SaveDigitalSign(SaveDigitalSignRequest request, CancellationToken cancellationToken = default)
@@ -90,6 +137,4 @@ public sealed record DigitalSignService : IDigitalSignService
             throw;
         }
     }
-
-
 }

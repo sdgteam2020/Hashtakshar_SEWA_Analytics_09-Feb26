@@ -8,6 +8,9 @@ namespace HastaksharSewaAnalytics.Infrastructure.Services;
 
 public sealed record TransactionService : ITransactionService
 {
+    private const int VaultSearchResultLimit = 20;
+    private const int VaultSearchMinLength = 3;
+    private const int VaultSearchMaxLength = 64;
     private readonly IUnitOfWork _unitOfWork;
 
     public TransactionService(IUnitOfWork unitOfWork)
@@ -108,14 +111,22 @@ public sealed record TransactionService : ITransactionService
         return true;
     }
 
-    public async Task<List<XmlDataForPublicKeyResponse>> SearchVaultMastersBySerialAsync(string term, CancellationToken ct)
+    public async Task<List<XmlDataForPublicKeyResponse>> SearchVaultMastersBySerialAsync(
+        string term,
+        CancellationToken ct)
     {
-        term = (term ?? "").Trim();
-        if (term.Length == 0) return new List<XmlDataForPublicKeyResponse>();
+        term = (term ?? string.Empty).Trim();
+
+        if (term.Length < VaultSearchMinLength || term.Length > VaultSearchMaxLength)
+            return [];
 
         var repo = _unitOfWork.Repository<VaultMaster, int>();
-        var list = await repo.GetListAsync(
-            selector: x => new XmlDataForPublicKeyResponse
+
+        return await repo.Query()
+            .Where(x => x.SerialNo != null &&
+                        EF.Functions.ILike(x.SerialNo, $"%{term}%"))
+            .OrderBy(x => x.SerialNo)
+            .Select(x => new XmlDataForPublicKeyResponse
             {
                 SerialNo = x.SerialNo,
                 Public_Key = x.Public_Key,
@@ -123,12 +134,8 @@ public sealed record TransactionService : ITransactionService
                 ValidFrom = x.ValidFrom,
                 ValidTo = x.ValidTo,
                 Status = true
-            },
-            predicate: x => x.SerialNo != null && EF.Functions.ILike(x.SerialNo, $"%{term}%"),
-            orderBy: q => q.OrderBy(x => x.SerialNo),
-            cancellationToken: ct
-        );
-
-        return list.Take(20).ToList();
+            })
+            .Take(VaultSearchResultLimit)
+            .ToListAsync(ct);
     }
 }

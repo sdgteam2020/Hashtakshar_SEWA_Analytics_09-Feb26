@@ -5,6 +5,12 @@ namespace HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
 public interface IDigitalSignService
 {
     Task<int> GetDigitalSignCountAsync(CancellationToken cancellationToken = default);
-    Task<List<GetDigitalSignRespone>> GetDigitalSignListAsync(CancellationToken cancellationToken = default);
+
+    Task<(List<GetDigitalSignRespone> Data, int TotalCount, int FilteredCount)> GetDigitalSignListAsync(
+        int start,
+        int length,
+        string? searchValue,
+        CancellationToken cancellationToken = default);
+
     Task<bool> SaveDigitalSign(SaveDigitalSignRequest saveDigitalSignRequest, CancellationToken cancellationToken = default);
 }

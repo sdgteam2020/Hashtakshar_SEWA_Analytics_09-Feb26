@@ -178,7 +178,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd", policy =>
     {
-        policy.WithOrigins("https://localhost:7018", "https://192.168.10.41","https://192.168.10.251", "https://hastaksharsewa.army.mil/")
+        policy.WithOrigins(Environment.GetEnvironmentVariable("HSewaCorsSetting__AllowedOrigins")!)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -225,23 +225,25 @@ app.UseForwardedHeaders();
 app.UseCookiePolicy();
 
 
-var allowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-{
-    "192.168.10.41",
-    "192.168.10.251",
-    "localhost",
-    "hastaksharsewa.army.mil"
-};
+var allowedHostsEnv = Environment.GetEnvironmentVariable("HSewa__AllowedHosts");
+
+var allowedHosts = new HashSet<string>(
+    (allowedHostsEnv ?? string.Empty)
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+    StringComparer.OrdinalIgnoreCase
+);
 
 app.Use(async (ctx, next) =>
 {
-    var host = ctx.Request.Host.Host; 
+    var host = ctx.Request.Host.Host;
+
     if (!allowedHosts.Contains(host))
     {
         ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
         await ctx.Response.WriteAsync("Invalid Host header.");
         return;
     }
+
     await next();
 });
 
