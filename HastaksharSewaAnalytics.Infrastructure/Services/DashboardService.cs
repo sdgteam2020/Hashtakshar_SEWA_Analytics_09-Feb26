@@ -1,7 +1,8 @@
-﻿using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.Common;
+using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.Common;
 using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
 using HastaksharSewaAnalytics.Application.Dtos.Dashboard;
 using HastaksharSewaAnalytics.Domain.Entities;
+using HastaksharSewaAnalytics.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace HastaksharSewaAnalytics.Infrastructure.Services;
@@ -22,49 +23,48 @@ public sealed record DashboardService : IDashboardService
         start = Math.Max(start, 0);
         length = Math.Clamp(length, 1, 100);
 
-        var repo = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
-        var todayUtc = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero);
-        var tomorrowUtc = todayUtc.AddDays(1);
+        var logs = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>().Query();
+        var clients = _unitOfWork.Repository<ClientMaster, int>().Query();
+        var versions = _unitOfWork.Repository<ApplicationVersion, int>().Query();
+        var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
 
-        var query = repo.Query()
-            .Where(x => x.RunOnDate >= todayUtc && x.RunOnDate < tomorrowUtc);
+        var query = from log in logs
+                    join client in clients on log.ClientId equals client.Id
+                    join version in versions on log.VersionId equals version.Id
+                    where log.RunOnDate == todayUtc
+                    select new
+                    {
+                        log.Id,
+                        client.DomainId,
+                        client.IPAddress,
+                        version.Version,
+                        log.RunOnDate
+                    };
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(searchValue))
         {
             var pattern = $"%{searchValue.Trim()}%";
-
             query = query.Where(x =>
-                (x.DomainId != null && EF.Functions.ILike(x.DomainId, pattern)) ||
-                (x.IPAddress != null && EF.Functions.ILike(x.IPAddress, pattern)) ||
-                (x.Version != null && EF.Functions.ILike(x.Version, pattern)));
+                EF.Functions.ILike(x.DomainId, pattern) ||
+                EF.Functions.ILike(x.IPAddress, pattern) ||
+                EF.Functions.ILike(x.Version, pattern));
         }
 
         var filteredCount = await query.CountAsync(cancellationToken);
-
         var rows = await query
             .OrderByDescending(x => x.Id)
             .Skip(start)
             .Take(length)
-            .Select(x => new
-            {
-                x.Id,
-                x.DomainId,
-                x.IPAddress,
-                x.Version,
-                x.RunOnDate
-            })
             .ToListAsync(cancellationToken);
-
-        var istOffset = TimeSpan.FromHours(5.5);
 
         var data = rows.Select(x => new GetInstallAppDataResponse(
             x.Id,
             x.DomainId,
             x.IPAddress,
             x.Version,
-            x.RunOnDate.ToOffset(istOffset).ToString("dd-MM-yyyy hh:mm tt")
+            x.RunOnDate.ToString("dd-MM-yyyy")
         )).ToList();
 
         return (data, totalCount, filteredCount);
@@ -79,39 +79,41 @@ public sealed record DashboardService : IDashboardService
         start = Math.Max(start, 0);
         length = Math.Clamp(length, 1, 100);
 
-        var repo = _unitOfWork.Repository<HastaksharSewaInstallation, int>();
-        var query = repo.Query();
+        var installations = _unitOfWork.Repository<HastaksharSewaInstallation, int>().Query();
+        var clients = _unitOfWork.Repository<ClientMaster, int>().Query();
+        var versions = _unitOfWork.Repository<ApplicationVersion, int>().Query();
+
+        var query = from installation in installations
+                    join client in clients on installation.ClientId equals client.Id
+                    join version in versions on installation.VersionId equals version.Id
+                    select new
+                    {
+                        installation.Id,
+                        client.DomainId,
+                        client.IPAddress,
+                        version.Version,
+                        installation.InstallDate
+                    };
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(searchValue))
         {
             var pattern = $"%{searchValue.Trim()}%";
-
             query = query.Where(x =>
-                (x.DomainId != null && EF.Functions.ILike(x.DomainId, pattern)) ||
-                (x.IPAddress != null && EF.Functions.ILike(x.IPAddress, pattern)) ||
-                (x.Version != null && EF.Functions.ILike(x.Version, pattern)));
+                EF.Functions.ILike(x.DomainId, pattern) ||
+                EF.Functions.ILike(x.IPAddress, pattern) ||
+                EF.Functions.ILike(x.Version, pattern));
         }
 
         var filteredCount = await query.CountAsync(cancellationToken);
-
         var rows = await query
             .OrderByDescending(x => x.Id)
             .Skip(start)
             .Take(length)
-            .Select(x => new
-            {
-                x.Id,
-                x.DomainId,
-                x.IPAddress,
-                x.Version,
-                x.InstallDate
-            })
             .ToListAsync(cancellationToken);
 
         var istOffset = TimeSpan.FromHours(5.5);
-
         var data = rows.Select(x => new GetInstallAppDataResponse(
             x.Id,
             x.DomainId,
@@ -125,23 +127,18 @@ public sealed record DashboardService : IDashboardService
 
     public async Task<int> GetTodayUserCount(CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
-        var todayStartUtc = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero);
-        var tomorrowStartUtc = todayStartUtc.AddDays(1);
-        return await repo.CountAsync(x => x.RunOnDate >= todayStartUtc && x.RunOnDate < tomorrowStartUtc, cancellationToken);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        return await _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>()
+            .CountAsync(x => x.RunOnDate == today, cancellationToken);
     }
 
     public async Task<int> GetTotalInstallationsAsync(CancellationToken cancellationToken = default)
-    {
-        var repo = _unitOfWork.Repository<HastaksharSewaInstallation, int>();
-        return await repo.CountAsync(null, cancellationToken);
-    }
+        => await _unitOfWork.Repository<HastaksharSewaInstallation, int>()
+            .CountAsync(null, cancellationToken);
 
     public async Task<int> GetClientErrorLogsCounts(CancellationToken cancellationToken = default)
-    {
-        var repo = _unitOfWork.Repository<ClientErrorLog, int>();
-        return await repo.CountAsync(null, cancellationToken);
-    }
+        => await _unitOfWork.Repository<ClientErrorLog, int>()
+            .CountAsync(null, cancellationToken);
 
     public async Task<(List<GetClientErrorLogsResponse> Data, int TotalCount, int FilteredCount)> GetClientErrorLogsData(
         int start,
@@ -152,67 +149,71 @@ public sealed record DashboardService : IDashboardService
         start = Math.Max(start, 0);
         length = Math.Clamp(length, 1, 100);
 
-        var repo = _unitOfWork.Repository<ClientErrorLog, int>();
-        var query = repo.Query();
+        var errorLogs = _unitOfWork.Repository<ClientErrorLog, int>().Query();
+        var clients = _unitOfWork.Repository<ClientMaster, int>().Query();
+        var versions = _unitOfWork.Repository<ApplicationVersion, int>().Query();
+        var applications = _unitOfWork.Repository<ApplicationMaster, int>().Query();
+
+        var query = from log in errorLogs
+                    join client in clients on log.ClientId equals client.Id
+                    join version in versions on log.ApplicationVersionId equals version.Id
+                    join app in applications on version.ApplicationId equals app.Id
+                    select new
+                    {
+                        log.Id,
+                        app.AppName,
+                        log.ErrorMessage,
+                        log.StackTrace,
+                        IpAddress = client.IPAddress,
+                        log.MachineName,
+                        log.UserName,
+                        log.OperatingSystem,
+                        log.Is64Bit,
+                        log.SystemDirectory,
+                        AppVersion = version.Version,
+                        log.Extra,
+                        log.CreatedAt
+                    };
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(searchValue))
         {
             var pattern = $"%{searchValue.Trim()}%";
-
             query = query.Where(x =>
-                (x.AppName != null && EF.Functions.ILike(x.AppName, pattern)) ||
+                EF.Functions.ILike(x.AppName, pattern) ||
                 (x.ErrorMessage != null && EF.Functions.ILike(x.ErrorMessage, pattern)) ||
                 (x.StackTrace != null && EF.Functions.ILike(x.StackTrace, pattern)) ||
-                (x.IpAddress != null && EF.Functions.ILike(x.IpAddress, pattern)) ||
+                EF.Functions.ILike(x.IpAddress, pattern) ||
                 (x.MachineName != null && EF.Functions.ILike(x.MachineName, pattern)) ||
                 (x.UserName != null && EF.Functions.ILike(x.UserName, pattern)) ||
                 (x.OperatingSystem != null && EF.Functions.ILike(x.OperatingSystem, pattern)) ||
                 (x.SystemDirectory != null && EF.Functions.ILike(x.SystemDirectory, pattern)) ||
-                (x.AppVersion != null && EF.Functions.ILike(x.AppVersion, pattern)) ||
+                EF.Functions.ILike(x.AppVersion, pattern) ||
                 (x.Extra != null && EF.Functions.ILike(x.Extra, pattern)));
         }
 
         var filteredCount = await query.CountAsync(cancellationToken);
-
         var rows = await query
             .OrderByDescending(x => x.Id)
             .Skip(start)
             .Take(length)
-            .Select(x => new
-            {
-                x.Id,
-                x.AppName,
-                x.ErrorMessage,
-                x.StackTrace,
-                x.IpAddress,
-                x.MachineName,
-                x.UserName,
-                x.OperatingSystem,
-                x.Is64Bit,
-                x.SystemDirectory,
-                x.AppVersion,
-                x.Extra,
-                x.CreatedAt
-            })
             .ToListAsync(cancellationToken);
 
         var istOffset = TimeSpan.FromHours(5.5);
-
         var data = rows.Select(x => new GetClientErrorLogsResponse(
             x.Id,
             x.AppName,
-            x.ErrorMessage!,
-            x.StackTrace!,
-            x.IpAddress!,
-            x.MachineName!,
-            x.UserName!,
-            x.OperatingSystem!,
+            x.ErrorMessage ?? string.Empty,
+            x.StackTrace ?? string.Empty,
+            x.IpAddress,
+            x.MachineName ?? string.Empty,
+            x.UserName ?? string.Empty,
+            x.OperatingSystem ?? string.Empty,
             x.Is64Bit,
-            x.SystemDirectory!,
-            x.AppVersion!,
-            x.Extra!,
+            x.SystemDirectory ?? string.Empty,
+            x.AppVersion,
+            x.Extra ?? string.Empty,
             x.CreatedAt.ToOffset(istOffset).ToString("dd-MM-yyyy HH:mm")
         )).ToList();
 
@@ -220,10 +221,8 @@ public sealed record DashboardService : IDashboardService
     }
 
     public async Task<int> GetVaultDataCount(CancellationToken cancellationToken = default)
-    {
-        var repo = _unitOfWork.Repository<VaultMaster, int>();
-        return await repo.CountAsync(null, cancellationToken);
-    }
+        => await _unitOfWork.Repository<VaultMaster, int>()
+            .CountAsync(null, cancellationToken);
 
     public async Task<(List<GetPublicKeyValtResponse> Data, int TotalCount, int FilteredCount)> GetVaultMasterData(
         int start,
@@ -234,25 +233,19 @@ public sealed record DashboardService : IDashboardService
         start = Math.Max(start, 0);
         length = Math.Clamp(length, 1, 100);
 
-        var repo = _unitOfWork.Repository<VaultMaster, int>();
-        var query = repo.Query();
-
+        var query = _unitOfWork.Repository<VaultMaster, int>().Query();
         var totalCount = await query.CountAsync(cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(searchValue))
         {
             var pattern = $"%{searchValue.Trim()}%";
-
             query = query.Where(x =>
-                (x.SerialNo != null && EF.Functions.ILike(x.SerialNo, pattern)) ||
-                (x.Public_Key != null && EF.Functions.ILike(x.Public_Key, pattern)) ||
-                (x.ValidFrom != null && EF.Functions.ILike(x.ValidFrom, pattern)) ||
-                (x.ValidTo != null && EF.Functions.ILike(x.ValidTo, pattern)) ||
-                (x.CreatedBy != null && EF.Functions.ILike(x.CreatedBy, pattern)));
+                EF.Functions.ILike(x.SerialNo, pattern) ||
+                EF.Functions.ILike(x.Public_Key, pattern) ||
+                EF.Functions.ILike(x.CreatedBy, pattern));
         }
 
         var filteredCount = await query.CountAsync(cancellationToken);
-
         var rows = await query
             .OrderByDescending(x => x.Id)
             .Skip(start)
@@ -271,15 +264,14 @@ public sealed record DashboardService : IDashboardService
             .ToListAsync(cancellationToken);
 
         var istOffset = TimeSpan.FromHours(5.5);
-
         var data = rows.Select(x => new GetPublicKeyValtResponse(
             x.Id,
-            x.Public_Key!,
-            x.SerialNo!,
+            x.Public_Key,
+            x.SerialNo,
             x.TokenValid,
-            x.ValidFrom!,
-            x.ValidTo!,
-            x.CreatedBy!,
+            DateTimeValueParser.ToApiString(x.ValidFrom),
+            DateTimeValueParser.ToApiString(x.ValidTo),
+            x.CreatedBy,
             x.CreatedAt.ToOffset(istOffset).ToString("dd-MM-yyyy hh:mm tt")
         )).ToList();
 

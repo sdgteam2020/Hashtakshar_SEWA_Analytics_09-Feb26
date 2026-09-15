@@ -1,25 +1,21 @@
-﻿using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.Common;
+using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.Common;
 using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
 using HastaksharSewaAnalytics.Application.Dtos.DigitalSign;
 using HastaksharSewaAnalytics.Domain.Entities;
+using HastaksharSewaAnalytics.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace HastaksharSewaAnalytics.Infrastructure.Services;
 
 public sealed record DigitalSignService : IDigitalSignService
 {
-    private readonly IUnitOfWork _UoW;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public DigitalSignService(IUnitOfWork uoW)
-    {
-        _UoW = uoW;
-    }
+    public DigitalSignService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
     public async Task<int> GetDigitalSignCountAsync(CancellationToken cancellationToken = default)
-    {
-        return await _UoW.Repository<DigitalSignDetail, int>()
+        => await _unitOfWork.Repository<DigitalSignDetail, int>()
             .CountAsync(null, cancellationToken);
-    }
 
     public async Task<(List<GetDigitalSignRespone> Data, int TotalCount, int FilteredCount)> GetDigitalSignListAsync(
         int start,
@@ -30,20 +26,7 @@ public sealed record DigitalSignService : IDigitalSignService
         start = Math.Max(start, 0);
         length = Math.Clamp(length, 1, 100);
 
-        var digitalSign = _UoW.Repository<DigitalSignDetail, int>().Query();
-        var userData = _UoW.Repository<VaultMaster, int>().Query();
-
-        var query = from ds in digitalSign
-                    join ud in userData on ds.ValtMasterId equals ud.Id
-                    select new
-                    {
-                        ds.Id,
-                        ds.ValtMasterId,
-                        ds.DocumentName,
-                        ds.SignDateTime,
-                        ds.IpAddress
-                    };
-
+        var query = _unitOfWork.Repository<DigitalSignDetail, int>().Query();
         var totalCount = await query.CountAsync(cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(searchValue))
@@ -51,90 +34,90 @@ public sealed record DigitalSignService : IDigitalSignService
             var search = searchValue.Trim();
             var pattern = $"%{search}%";
 
-            if (int.TryParse(search, out var userPublicDataId))
+            if (int.TryParse(search, out var vaultMasterId))
             {
                 query = query.Where(x =>
-                    x.ValtMasterId == userPublicDataId ||
+                    x.VaultMasterId == vaultMasterId ||
                     (x.DocumentName != null && EF.Functions.ILike(x.DocumentName, pattern)) ||
-                    (x.SignDateTime != null && EF.Functions.ILike(x.SignDateTime, pattern)) ||
                     (x.IpAddress != null && EF.Functions.ILike(x.IpAddress, pattern)));
             }
             else
             {
                 query = query.Where(x =>
                     (x.DocumentName != null && EF.Functions.ILike(x.DocumentName, pattern)) ||
-                    (x.SignDateTime != null && EF.Functions.ILike(x.SignDateTime, pattern)) ||
                     (x.IpAddress != null && EF.Functions.ILike(x.IpAddress, pattern)));
             }
         }
 
         var filteredCount = await query.CountAsync(cancellationToken);
-
         var rows = await query
             .OrderByDescending(x => x.Id)
             .Skip(start)
             .Take(length)
+            .Select(x => new
+            {
+                x.Id,
+                x.VaultMasterId,
+                x.DocumentName,
+                x.SignDateTime,
+                x.IpAddress
+            })
             .ToListAsync(cancellationToken);
 
         var data = rows.Select(x => new GetDigitalSignRespone(
             x.Id,
-            x.ValtMasterId,
-            x.DocumentName!,
-            x.SignDateTime!,
-            x.IpAddress!
+            x.VaultMasterId,
+            x.DocumentName ?? string.Empty,
+            DateTimeValueParser.ToApiString(x.SignDateTime),
+            x.IpAddress ?? string.Empty
         )).ToList();
 
         return (data, totalCount, filteredCount);
     }
 
-    public async Task<bool> SaveDigitalSign(SaveDigitalSignRequest request, CancellationToken cancellationToken = default)
+    public async Task<bool> SaveDigitalSign(
+        SaveDigitalSignRequest request,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var userDataRepo = _UoW.Repository<VaultMaster, int>();
-        var digitalSignRepo = _UoW.Repository<DigitalSignDetail, int>();
+        var vaultRepo = _unitOfWork.Repository<VaultMaster, int>();
+        var digitalSignRepo = _unitOfWork.Repository<DigitalSignDetail, int>();
 
-        try
+        var vaultMasterId = await vaultRepo.GetScalarAsync(
+            selector: x => x.Id,
+            predicate: x => x.SerialNo == request.SerialNo,
+            cancellationToken: cancellationToken);
+
+        if (vaultMasterId <= 0)
         {
-            int publicUserDataId = await userDataRepo.GetScalarAsync(
-                selector: s => s.Id,
-                predicate: p => p.SerialNo == request.SerialNo
-            );
+            var validFrom = DateTimeValueParser.ParseRequired(request.ValidFrom, nameof(request.ValidFrom));
+            var validTo = DateTimeValueParser.ParseRequired(request.ValidTo, nameof(request.ValidTo));
 
-            if (publicUserDataId <= 0)
-            {
-                var userEntity = VaultMaster.Create(
-                    request.PublicKey,
-                    request.SerialNo,
-                    request.TokenValid,
-                    request.ValidFrom,
-                    request.ValidTo
-                );
+            var vault = VaultMaster.Create(
+                request.PublicKey,
+                request.SerialNo,
+                request.TokenValid,
+                validFrom,
+                validTo);
 
-                await userDataRepo.AddAsync(userEntity, cancellationToken);
-                await _UoW.SaveChangesAsync(cancellationToken);
-
-                publicUserDataId = userEntity.Id;
-            }
-
-            var entity = DigitalSignDetail.Create(
-                publicUserDataId,
-                request.SignedDateTime,
-                request.OriginForSign,
-                request.RefererForSign,
-                request.IpAddress,
-                request.DocumentName,
-                request.DocumnetType
-            );
-
-            await digitalSignRepo.AddAsync(entity, cancellationToken);
-
-            int rows = await _UoW.SaveChangesAsync(cancellationToken);
-            return rows > 0;
+            await vaultRepo.AddAsync(vault, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            vaultMasterId = vault.Id;
         }
-        catch
-        {
-            throw;
-        }
+
+        var signDateTime = DateTimeValueParser.ParseRequired(request.SignedDateTime, nameof(request.SignedDateTime));
+        var entity = DigitalSignDetail.Create(
+            vaultMasterId,
+            signDateTime,
+            request.OriginForSign,
+            request.RefererForSign,
+            request.IpAddress,
+            request.DocumentName,
+            request.DocumnetType,
+            request.DocumentHash);
+
+        await digitalSignRepo.AddAsync(entity, cancellationToken);
+        return await _unitOfWork.SaveChangesAsync(cancellationToken) > 0;
     }
 }

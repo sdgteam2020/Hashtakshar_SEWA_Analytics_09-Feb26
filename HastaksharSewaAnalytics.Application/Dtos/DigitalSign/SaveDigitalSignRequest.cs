@@ -1,6 +1,6 @@
-﻿namespace HastaksharSewaAnalytics.Application.Dtos.DigitalSign;
+namespace HastaksharSewaAnalytics.Application.Dtos.DigitalSign;
 
-public sealed record SaveDigitalSignRequest(   
+public sealed record SaveDigitalSignRequest(
     string PublicKey,
     string SerialNo,
     bool TokenValid,
@@ -11,5 +11,6 @@ public sealed record SaveDigitalSignRequest(
     string? RefererForSign,
     string? IpAddress,
     string? DocumentName,
-    string? DocumnetType
-    );
+    string? DocumnetType,
+    string? DocumentHash = null
+);

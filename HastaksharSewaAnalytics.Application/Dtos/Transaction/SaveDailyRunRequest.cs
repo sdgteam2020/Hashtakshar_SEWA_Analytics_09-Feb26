@@ -1,9 +1,10 @@
-﻿namespace HastaksharSewaAnalytics.Application.Dtos.Transaction;
+namespace HastaksharSewaAnalytics.Application.Dtos.Transaction;
 
 public record SaveDailyRunRequest(
     string DomainId,
     string IpAddress,
     string Version,
     DateTimeOffset? RunOnDate = null,
-    string? CreatedBy = null
-    );
+    string? CreatedBy = null,
+    string? DeviceId = null
+);

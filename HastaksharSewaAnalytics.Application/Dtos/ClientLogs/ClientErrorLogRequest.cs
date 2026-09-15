@@ -1,4 +1,4 @@
-﻿namespace HastaksharSewaAnalytics.Application.Dtos.ClientLogs;
+namespace HastaksharSewaAnalytics.Application.Dtos.ClientLogs;
 
 public record ClientErrorLogRequest(
     string IpAddress,
@@ -11,5 +11,8 @@ public record ClientErrorLogRequest(
     string? AppVersion,
     string ErrorMessage,
     string? StackTrace,
-    string? Extra
-    );
+    string? Extra,
+    Guid? RequestId = null,
+    string? DomainId = null,
+    string? DeviceId = null
+);

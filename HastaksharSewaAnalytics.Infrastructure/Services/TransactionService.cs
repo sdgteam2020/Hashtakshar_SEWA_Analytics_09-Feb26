@@ -1,7 +1,8 @@
-﻿using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.Common;
+using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.Common;
 using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.IServices;
 using HastaksharSewaAnalytics.Application.Dtos.Transaction;
 using HastaksharSewaAnalytics.Domain.Entities;
+using HastaksharSewaAnalytics.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace HastaksharSewaAnalytics.Infrastructure.Services;
@@ -11,11 +12,14 @@ public sealed record TransactionService : ITransactionService
     private const int VaultSearchResultLimit = 20;
     private const int VaultSearchMinLength = 3;
     private const int VaultSearchMaxLength = 64;
+
     private readonly IUnitOfWork _unitOfWork;
+    private readonly MasterDataResolver _masterDataResolver;
 
     public TransactionService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
+        _masterDataResolver = new MasterDataResolver(unitOfWork);
     }
 
     public async Task<bool?> SaveVaultMasterData(
@@ -25,61 +29,62 @@ public sealed record TransactionService : ITransactionService
         ArgumentNullException.ThrowIfNull(userPublicDataRequest);
 
         var repository = _unitOfWork.Repository<VaultMaster, int>();
+        var existingId = await repository.GetScalarAsync(
+            selector: x => x.Id,
+            predicate: x => x.SerialNo == userPublicDataRequest.SerialNo,
+            cancellationToken: cancellationToken);
 
-        var isExist = await repository.CountAsync(
-            x => x.SerialNo == userPublicDataRequest.SerialNo,
-            ct: cancellationToken);
-
-        if (isExist > 0)
-        {
+        if (existingId > 0)
             return true;
-        }
 
-        var userPublicData = VaultMaster.Create(
+        var validFrom = DateTimeValueParser.ParseRequired(userPublicDataRequest.ValidFrom, nameof(userPublicDataRequest.ValidFrom));
+        var validTo = DateTimeValueParser.ParseRequired(userPublicDataRequest.ValidTo, nameof(userPublicDataRequest.ValidTo));
+
+        var vault = VaultMaster.Create(
             userPublicDataRequest.Public_Key,
             userPublicDataRequest.SerialNo,
             userPublicDataRequest.TokenValid,
-            userPublicDataRequest.ValidFrom,
-            userPublicDataRequest.ValidTo
-        );
+            validFrom,
+            validTo);
 
-        await repository.AddAsync(userPublicData);
+        await repository.AddAsync(vault, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         return true;
-
     }
 
     public async Task<bool> SaveDailyRunAsync(
-        SaveDailyRunRequest saveDailyRunRequest,
-        CancellationToken ct = default
-    )
+        SaveDailyRunRequest request,
+        CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var clientId = await _masterDataResolver.GetOrCreateClientAsync(
+            request.DomainId,
+            request.IpAddress,
+            request.DeviceId,
+            request.CreatedBy,
+            ct);
+
+        var versionId = await _masterDataResolver.GetOrCreateHastaksharVersionAsync(
+            request.Version,
+            request.CreatedBy,
+            ct);
+
+        var runDate = DateOnly.FromDateTime((request.RunOnDate ?? DateTimeOffset.UtcNow).UtcDateTime);
         var repository = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
-        var todayStartUtc = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero);
-        var tomorrowStartUtc = todayStartUtc.AddDays(1);
 
-        var isExist = await repository.CountAsync(
-            x =>
-                x.DomainId == saveDailyRunRequest.DomainId &&
-                x.Version == saveDailyRunRequest.Version &&
-                x.IPAddress == saveDailyRunRequest.IpAddress &&
-                x.CreatedAt >= todayStartUtc &&
-                x.CreatedAt < tomorrowStartUtc,
-            ct: ct
-        );
+        var exists = await repository.CountAsync(
+            x => x.ClientId == clientId && x.RunOnDate == runDate,
+            ct);
 
-        if (isExist > 0)
-        {
+        if (exists > 0)
             return true;
-        }
+
         var dailyRunLog = HastaksharSewaDailyRunLog.Create(
-           saveDailyRunRequest.DomainId,
-           saveDailyRunRequest.IpAddress,
-           saveDailyRunRequest.Version,
-           saveDailyRunRequest.RunOnDate,
-           saveDailyRunRequest.CreatedBy
-        );
+            clientId,
+            versionId,
+            runDate,
+            request.CreatedBy);
 
         await repository.AddAsync(dailyRunLog, ct);
         await _unitOfWork.SaveChangesAsync(ct);
@@ -87,24 +92,35 @@ public sealed record TransactionService : ITransactionService
     }
 
     public async Task<bool> SaveInstallationAsync(
-       SaveInstallationRquest saveInstallationRquest,
-       CancellationToken ct = default
-    )
+        SaveInstallationRquest request,
+        CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var clientId = await _masterDataResolver.GetOrCreateClientAsync(
+            request.DomainId,
+            request.IpAddress,
+            request.DeviceId,
+            createdBy: null,
+            ct: ct);
+
+        var versionId = await _masterDataResolver.GetOrCreateHastaksharVersionAsync(
+            request.Version,
+            createdBy: null,
+            ct: ct);
+
         var repository = _unitOfWork.Repository<HastaksharSewaInstallation, int>();
-        var IsExist = await repository.CountAsync(
-            x => x.DomainId == saveInstallationRquest.DomainId && x.Version == saveInstallationRquest.Version && x.IPAddress == saveInstallationRquest.IpAddress,
-            ct: ct
-        );
-        if (IsExist > 0)
-        {
+        var exists = await repository.CountAsync(
+            x => x.ClientId == clientId && x.VersionId == versionId,
+            ct);
+
+        if (exists > 0)
             return true;
-        }
+
         var installation = HastaksharSewaInstallation.Create(
-           saveInstallationRquest.DomainId,
-           saveInstallationRquest.IpAddress,
-           saveInstallationRquest.Version
-        );
+            clientId,
+            versionId,
+            request.InstallDate);
 
         await repository.AddAsync(installation, ct);
         await _unitOfWork.SaveChangesAsync(ct);
@@ -121,21 +137,28 @@ public sealed record TransactionService : ITransactionService
             return [];
 
         var repo = _unitOfWork.Repository<VaultMaster, int>();
-
-        return await repo.Query()
-            .Where(x => x.SerialNo != null &&
-                        EF.Functions.ILike(x.SerialNo, $"%{term}%"))
+        var rows = await repo.Query()
+            .Where(x => EF.Functions.ILike(x.SerialNo, $"%{term}%"))
             .OrderBy(x => x.SerialNo)
-            .Select(x => new XmlDataForPublicKeyResponse
+            .Select(x => new
             {
-                SerialNo = x.SerialNo,
-                Public_Key = x.Public_Key,
-                TokenValid = x.TokenValid,
-                ValidFrom = x.ValidFrom,
-                ValidTo = x.ValidTo,
-                Status = true
+                x.SerialNo,
+                x.Public_Key,
+                x.TokenValid,
+                x.ValidFrom,
+                x.ValidTo
             })
             .Take(VaultSearchResultLimit)
             .ToListAsync(ct);
+
+        return rows.Select(x => new XmlDataForPublicKeyResponse
+        {
+            SerialNo = x.SerialNo,
+            Public_Key = x.Public_Key,
+            TokenValid = x.TokenValid,
+            ValidFrom = DateTimeValueParser.ToApiString(x.ValidFrom),
+            ValidTo = DateTimeValueParser.ToApiString(x.ValidTo),
+            Status = true
+        }).ToList();
     }
 }
