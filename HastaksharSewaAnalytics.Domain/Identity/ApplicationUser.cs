@@ -2,9 +2,9 @@
 
 namespace HastaksharSewaAnalytics.Domain.Identity;
 
-public sealed class ApplicationUser : IdentityUser
+public sealed class ApplicationUser : IdentityUser<int>
 {
-    public string? FullName { get; set; }
     public string? ActiveSessionId { get; set; }
     public DateTime? ActiveSessionIssuedUtc { get; set; }
+        
 }

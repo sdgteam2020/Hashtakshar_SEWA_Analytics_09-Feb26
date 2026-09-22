@@ -10,7 +10,7 @@ namespace HastaksharSewaAnalytics.Infrastructure.Services;
 public sealed record DashboardService : IDashboardService
 {
     private readonly IUnitOfWork _unitOfWork;
-
+    private readonly TimeSpan _istOffset = TimeSpan.FromHours(5.5);
     public DashboardService(IUnitOfWork unitOfWork) =>
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
 
@@ -24,21 +24,23 @@ public sealed record DashboardService : IDashboardService
         length = Math.Clamp(length, 1, 100);
 
         var logs = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>().Query();
+        var installations = _unitOfWork.Repository<HastaksharSewaInstallation, int>().Query();
         var clients = _unitOfWork.Repository<ClientMaster, int>().Query();
         var versions = _unitOfWork.Repository<ApplicationVersion, int>().Query();
         var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
 
         var query = from log in logs
-                    join client in clients on log.ClientId equals client.Id
-                    join version in versions on log.VersionId equals version.Id
-                    where log.RunOnDate == todayUtc
+                    join installation in installations on log.CreatedByClientId equals installation.Id
+                    join client in clients on installation.CreatedByClientId equals client.Id
+                    join version in versions on installation.VersionId equals version.Id
+                    where DateOnly.FromDateTime(log.CreatedAt.Date) == todayUtc
                     select new
                     {
                         log.Id,
                         client.DomainId,
                         client.IPAddress,
                         version.Version,
-                        log.RunOnDate
+                        log.CreatedAt
                     };
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -64,7 +66,7 @@ public sealed record DashboardService : IDashboardService
             x.DomainId,
             x.IPAddress,
             x.Version,
-            x.RunOnDate.ToString("dd-MM-yyyy")
+            x.CreatedAt.ToOffset(_istOffset).ToString("dd-MM-yyyy hh:mm tt")
         )).ToList();
 
         return (data, totalCount, filteredCount);
@@ -84,7 +86,7 @@ public sealed record DashboardService : IDashboardService
         var versions = _unitOfWork.Repository<ApplicationVersion, int>().Query();
 
         var query = from installation in installations
-                    join client in clients on installation.ClientId equals client.Id
+                    join client in clients on installation.CreatedByClientId equals client.Id
                     join version in versions on installation.VersionId equals version.Id
                     select new
                     {
@@ -92,7 +94,7 @@ public sealed record DashboardService : IDashboardService
                         client.DomainId,
                         client.IPAddress,
                         version.Version,
-                        installation.InstallDate
+                        installation.CreatedAt
                     };
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -113,23 +115,44 @@ public sealed record DashboardService : IDashboardService
             .Take(length)
             .ToListAsync(cancellationToken);
 
-        var istOffset = TimeSpan.FromHours(5.5);
+        
         var data = rows.Select(x => new GetInstallAppDataResponse(
             x.Id,
             x.DomainId,
             x.IPAddress,
             x.Version,
-            x.InstallDate.ToOffset(istOffset).ToString("dd-MM-yyyy hh:mm tt")
+            x.CreatedAt.ToOffset(_istOffset).ToString("dd-MM-yyyy hh:mm tt")
         )).ToList();
 
         return (data, totalCount, filteredCount);
     }
 
-    public async Task<int> GetTodayUserCount(CancellationToken cancellationToken = default)
+    public async Task<int> GetTodayUserCount(
+     CancellationToken cancellationToken = default)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        return await _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>()
-            .CountAsync(x => x.RunOnDate == today, cancellationToken);
+        var istNow = DateTimeOffset.UtcNow.ToOffset(_istOffset);
+
+        var istStart = new DateTimeOffset(
+            istNow.Year,
+            istNow.Month,
+            istNow.Day,
+            0, 0, 0,
+            _istOffset);
+
+        var istEnd = istStart.AddDays(1);
+
+
+        // Convert IST boundaries back to UTC
+        var utcStart = istStart.UtcDateTime;
+        var utcEnd = istEnd.UtcDateTime;
+
+
+        return await _unitOfWork
+            .Repository<HastaksharSewaDailyRunLog, int>()
+            .CountAsync(
+                x => x.CreatedAt >= utcStart &&
+                     x.CreatedAt < utcEnd,
+                cancellationToken);
     }
 
     public async Task<int> GetTotalInstallationsAsync(CancellationToken cancellationToken = default)
@@ -155,7 +178,7 @@ public sealed record DashboardService : IDashboardService
         var applications = _unitOfWork.Repository<ApplicationMaster, int>().Query();
 
         var query = from log in errorLogs
-                    join client in clients on log.ClientId equals client.Id
+                    join client in clients on log.CreatedByClientId equals client.Id                    
                     join version in versions on log.ApplicationVersionId equals version.Id
                     join app in applications on version.ApplicationId equals app.Id
                     select new
@@ -163,15 +186,9 @@ public sealed record DashboardService : IDashboardService
                         log.Id,
                         app.AppName,
                         log.ErrorMessage,
-                        log.StackTrace,
                         IpAddress = client.IPAddress,
-                        log.MachineName,
-                        log.UserName,
-                        log.OperatingSystem,
-                        log.Is64Bit,
-                        log.SystemDirectory,
+                        MachineName = client.DomainId,      
                         AppVersion = version.Version,
-                        log.Extra,
                         log.CreatedAt
                     };
 
@@ -182,15 +199,10 @@ public sealed record DashboardService : IDashboardService
             var pattern = $"%{searchValue.Trim()}%";
             query = query.Where(x =>
                 EF.Functions.ILike(x.AppName, pattern) ||
-                (x.ErrorMessage != null && EF.Functions.ILike(x.ErrorMessage, pattern)) ||
-                (x.StackTrace != null && EF.Functions.ILike(x.StackTrace, pattern)) ||
+                (x.ErrorMessage != null && EF.Functions.ILike(x.ErrorMessage, pattern)) ||                
                 EF.Functions.ILike(x.IpAddress, pattern) ||
                 (x.MachineName != null && EF.Functions.ILike(x.MachineName, pattern)) ||
-                (x.UserName != null && EF.Functions.ILike(x.UserName, pattern)) ||
-                (x.OperatingSystem != null && EF.Functions.ILike(x.OperatingSystem, pattern)) ||
-                (x.SystemDirectory != null && EF.Functions.ILike(x.SystemDirectory, pattern)) ||
-                EF.Functions.ILike(x.AppVersion, pattern) ||
-                (x.Extra != null && EF.Functions.ILike(x.Extra, pattern)));
+                EF.Functions.ILike(x.AppVersion, pattern));
         }
 
         var filteredCount = await query.CountAsync(cancellationToken);
@@ -200,21 +212,14 @@ public sealed record DashboardService : IDashboardService
             .Take(length)
             .ToListAsync(cancellationToken);
 
-        var istOffset = TimeSpan.FromHours(5.5);
         var data = rows.Select(x => new GetClientErrorLogsResponse(
             x.Id,
             x.AppName,
             x.ErrorMessage ?? string.Empty,
-            x.StackTrace ?? string.Empty,
             x.IpAddress,
             x.MachineName ?? string.Empty,
-            x.UserName ?? string.Empty,
-            x.OperatingSystem ?? string.Empty,
-            x.Is64Bit,
-            x.SystemDirectory ?? string.Empty,
             x.AppVersion,
-            x.Extra ?? string.Empty,
-            x.CreatedAt.ToOffset(istOffset).ToString("dd-MM-yyyy HH:mm")
+            x.CreatedAt.ToOffset(_istOffset).ToString("dd-MM-yyyy HH:mm")
         )).ToList();
 
         return (data, totalCount, filteredCount);
@@ -242,7 +247,7 @@ public sealed record DashboardService : IDashboardService
             query = query.Where(x =>
                 EF.Functions.ILike(x.SerialNo, pattern) ||
                 EF.Functions.ILike(x.Public_Key, pattern) ||
-                EF.Functions.ILike(x.CreatedBy, pattern));
+                EF.Functions.ILike(x.CreatedByClientId.ToString(), pattern));
         }
 
         var filteredCount = await query.CountAsync(cancellationToken);
@@ -258,12 +263,11 @@ public sealed record DashboardService : IDashboardService
                 x.TokenValid,
                 x.ValidFrom,
                 x.ValidTo,
-                x.CreatedBy,
+                x.CreatedByClientId,
                 x.CreatedAt
             })
             .ToListAsync(cancellationToken);
 
-        var istOffset = TimeSpan.FromHours(5.5);
         var data = rows.Select(x => new GetPublicKeyValtResponse(
             x.Id,
             x.Public_Key,
@@ -271,8 +275,8 @@ public sealed record DashboardService : IDashboardService
             x.TokenValid,
             DateTimeValueParser.ToApiString(x.ValidFrom),
             DateTimeValueParser.ToApiString(x.ValidTo),
-            x.CreatedBy,
-            x.CreatedAt.ToOffset(istOffset).ToString("dd-MM-yyyy hh:mm tt")
+            x.CreatedByClientId,
+            x.CreatedAt.ToOffset(_istOffset).ToString("dd-MM-yyyy hh:mm tt")
         )).ToList();
 
         return (data, totalCount, filteredCount);

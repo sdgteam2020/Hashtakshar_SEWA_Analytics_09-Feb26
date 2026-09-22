@@ -3,7 +3,7 @@
 public sealed record GetDigitalSignRespone(
     int Id,
     int UserPublicDataId,
+    string IPAddress,
     string DocumentName,
-    string SignedAt,
-    string IpAddress
+    string SignedAt    
     );

@@ -2,36 +2,21 @@ using HastaksharSewaAnalytics.Domain.Premitives.AuditEntity;
 
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
-public sealed class HastaksharSewaDailyRunLog : AuditableEntity<int>
+public sealed class HastaksharSewaDailyRunLog : ClientAuditableEntity<int>
 {
     private HastaksharSewaDailyRunLog() : base(0) { }
-    private HastaksharSewaDailyRunLog(int id) : base(id) { }
-
-    public int ClientId { get; private set; }
-    public int VersionId { get; private set; }
-    public DateOnly RunOnDate { get; private set; }
+    private HastaksharSewaDailyRunLog(int id) : base(id) { }      
 
     public static HastaksharSewaDailyRunLog Create(
-        int clientId,
-        int versionId,
-        DateOnly? runOnDate = null,
-        string? createdBy = null)
+        int installedId)
     {
-        if (clientId <= 0)
-            throw new ArgumentOutOfRangeException(nameof(clientId));
-        if (versionId <= 0)
-            throw new ArgumentOutOfRangeException(nameof(versionId));
+        if (installedId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(installedId));
 
-        var entity = new HastaksharSewaDailyRunLog(0)
-        {
-            ClientId = clientId,
-            VersionId = versionId,
-            RunOnDate = runOnDate ?? DateOnly.FromDateTime(DateTime.UtcNow)
-        };
+        var entity = new HastaksharSewaDailyRunLog(0);
 
-        if (!string.IsNullOrWhiteSpace(createdBy))
-            entity.SetCreated(createdBy);
-
+        entity.SetCreated(installedId);
+        
         return entity;
     }
 }

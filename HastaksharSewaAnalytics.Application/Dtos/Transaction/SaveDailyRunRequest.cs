@@ -4,7 +4,6 @@ public record SaveDailyRunRequest(
     string DomainId,
     string IpAddress,
     string Version,
-    DateTimeOffset? RunOnDate = null,
     string? CreatedBy = null,
     string? DeviceId = null
 );

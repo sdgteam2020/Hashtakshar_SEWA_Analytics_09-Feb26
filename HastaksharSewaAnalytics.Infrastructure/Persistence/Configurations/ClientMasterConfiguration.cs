@@ -13,9 +13,6 @@ public sealed class ClientMasterConfiguration : IEntityTypeConfiguration<ClientM
         builder.Property(x => x.DomainId).HasMaxLength(64).IsRequired();
         builder.Property(x => x.IPAddress).HasMaxLength(64).IsRequired();
         builder.HasIndex(x => x.DomainId).IsUnique();
-        builder.HasOne<Device>()
-            .WithMany()
-            .HasForeignKey(x => x.DeviceId)
-            .OnDelete(DeleteBehavior.Restrict);
+       
     }
 }

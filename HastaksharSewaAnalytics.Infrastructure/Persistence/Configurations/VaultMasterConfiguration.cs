@@ -15,5 +15,9 @@ public sealed class VaultMasterConfiguration : IEntityTypeConfiguration<VaultMas
         builder.Property(x => x.ValidFrom).HasColumnType("timestamp with time zone");
         builder.Property(x => x.ValidTo).HasColumnType("timestamp with time zone");
         builder.HasIndex(x => x.SerialNo).IsUnique();
+        builder.HasOne<ClientMaster>()
+            .WithMany()
+            .HasForeignKey(x => x.CreatedByClientId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

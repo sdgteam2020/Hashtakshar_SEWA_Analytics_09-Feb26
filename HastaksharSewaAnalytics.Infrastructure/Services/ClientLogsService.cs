@@ -24,15 +24,10 @@ public sealed record ClientLogsService : IClientLogsService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var domainId = string.IsNullOrWhiteSpace(request.DomainId)
-            ? BuildLegacyDomainKey(request.MachineName)
-            : request.DomainId.Trim();
-
         var clientId = await _masterDataResolver.GetOrCreateClientAsync(
-            domainId,
+            request.MachineName,
             request.IpAddress,
-            request.DeviceId,
-            createdBy: null,
+            null,
             ct: cancellationToken);
 
         var applicationVersionId = await _masterDataResolver.GetOrCreateApplicationVersionAsync(
@@ -41,45 +36,18 @@ public sealed record ClientLogsService : IClientLogsService
             createdBy: null,
             ct: cancellationToken);
 
+        
+
         var repository = _unitOfWork.Repository<ClientErrorLog, int>();
-
-        if (request.RequestId.HasValue)
-        {
-            var duplicate = await repository.CountAsync(
-                x => x.RequestId == request.RequestId,
-                cancellationToken);
-
-            if (duplicate > 0)
-                return true;
-        }
 
         var log = ClientErrorLog.Create(
             clientId,
             applicationVersionId,
-            request.ErrorMessage,
-            request.StackTrace,
-            request.MachineName,
-            request.UserName,
-            request.OperatingSystem,
-            request.Is64Bit,
-            request.SystemDirectory,
-            request.Extra,
-            request.RequestId);
+            request.ErrorMessage
+          );
 
         await repository.AddAsync(log, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
-    }
-
-    private static string BuildLegacyDomainKey(string machineName)
-    {
-        if (!string.IsNullOrWhiteSpace(machineName) && machineName.Trim().Length <= 64)
-            return machineName.Trim();
-
-        var normalized = string.IsNullOrWhiteSpace(machineName)
-            ? "UNKNOWN-MACHINE"
-            : machineName.Trim().ToUpperInvariant();
-        var hash = MD5.HashData(Encoding.UTF8.GetBytes(normalized));
-        return $"MACHINE_{Convert.ToHexString(hash)[..12]}";
     }
 }

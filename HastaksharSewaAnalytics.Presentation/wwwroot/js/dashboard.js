@@ -200,17 +200,7 @@ $(function () {
                             }
                         },
                         { data: 'ipAddress', defaultContent: '-', render: $.fn.dataTable.render.text() },
-                        { data: 'machineName', defaultContent: '-', render: $.fn.dataTable.render.text() },
-                        { data: 'userName', defaultContent: '-', render: $.fn.dataTable.render.text() },
-                        { data: 'operatingSystem', defaultContent: '-', render: $.fn.dataTable.render.text() },
-                        {
-                            data: 'is64Bit',
-                            render: function (v) {
-                                return v ? 'Yes' : 'No';
-                            },
-                            defaultContent: '-'
-                        },
-                        { data: 'systemDirectory', defaultContent: '-', render: $.fn.dataTable.render.text() },
+                        { data: 'machineName', defaultContent: '-', render: $.fn.dataTable.render.text() },                        
                         { data: 'appVersion', defaultContent: '-', render: $.fn.dataTable.render.text() },
                         {
                             data: 'errorMessage',

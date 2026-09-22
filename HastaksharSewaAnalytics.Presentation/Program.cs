@@ -39,19 +39,19 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IClientLogsService, ClientLogsService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IDigitalSignService, DigitalSignService>();
-builder.Services.AddScoped<IDeviceKeyHasher, DeviceKeyHasher>();
+builder.Services.AddScoped<IClientKeyHasher, ClientKeyHasher>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<IClientKeyService, ClientKeyService>();
+builder.Services.AddScoped<MasterDataResolver>();
 
 builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole>(options =>
+    .AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     {
         options.User.RequireUniqueEmail = false;
         options.SignIn.RequireConfirmedAccount = false;
         options.Lockout.AllowedForNewUsers = true;
     })
-    .AddEntityFrameworkStores<HastaksharSewaAnalyticsDbContext>()
-    .AddDefaultTokenProviders();
+    .AddEntityFrameworkStores<HastaksharSewaAnalyticsDbContext>();
 
 builder.Services.Configure<SecurityStampValidatorOptions>(o =>
 {
@@ -87,7 +87,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("DeviceOnly", p =>
         p.AddAuthenticationSchemes("DeviceBearer")
          .RequireAuthenticatedUser()
-         .RequireClaim("token_type", "device"));
+         .RequireClaim("token_type", "client"));
 
     options.AddPolicy("UserOnly", p =>
         p.RequireAuthenticatedUser()
@@ -96,7 +96,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("DeviceOrUser", p =>
         p.AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, "DeviceBearer")
          .RequireAuthenticatedUser()
-         .RequireClaim("token_type", "device", "user"));
+         .RequireClaim("token_type", "client", "user"));
 });
 
 builder.Services.ConfigureApplicationCookie(options =>

@@ -2,7 +2,7 @@ using HastaksharSewaAnalytics.Domain.Premitives.AuditEntity;
 
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
-public sealed class VaultMaster : AuditableEntity<int>
+public sealed class VaultMaster : ClientAuditableEntity<int>
 {
     private VaultMaster() : base(0) { }
     private VaultMaster(int id) : base(id) { }
@@ -27,7 +27,7 @@ public sealed class VaultMaster : AuditableEntity<int>
         if (validFrom.HasValue && validTo.HasValue && validTo < validFrom)
             throw new ArgumentException("ValidTo cannot be earlier than ValidFrom.", nameof(validTo));
 
-        return new VaultMaster(0)
+        var entity = new VaultMaster(0)
         {
             Public_Key = publicKey.Trim(),
             SerialNo = serialNo.Trim(),
@@ -35,6 +35,8 @@ public sealed class VaultMaster : AuditableEntity<int>
             ValidFrom = validFrom,
             ValidTo = validTo
         };
+        return entity;
+
     }
 
     public void UpdateCertificate(
@@ -53,20 +55,17 @@ public sealed class VaultMaster : AuditableEntity<int>
         TokenValid = tokenValid;
         ValidFrom = validFrom;
         ValidTo = validTo;
-        SetModified(modifiedBy);
     }
 
     public void Activate(string modifiedBy)
     {
         if (TokenValid) return;
         TokenValid = true;
-        SetModified(modifiedBy);
     }
 
     public void Deactivate(string modifiedBy)
     {
         if (!TokenValid) return;
         TokenValid = false;
-        SetModified(modifiedBy);
     }
 }

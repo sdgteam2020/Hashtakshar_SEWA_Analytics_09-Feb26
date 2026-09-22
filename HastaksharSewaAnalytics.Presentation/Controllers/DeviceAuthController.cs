@@ -10,16 +10,16 @@ namespace HastaksharSewaAnalytics.Presentation.Controllers;
 [AllowAnonymous]
 public sealed class DeviceAuthController : ControllerBase
 {
-    private readonly IDeviceService _deviceService;
+    private readonly IClientKeyService _deviceService;
 
-    public DeviceAuthController(IDeviceService deviceService)
+    public DeviceAuthController(IClientKeyService deviceService)
     {
         _deviceService = deviceService;
     }
      
     [HttpPost("token"), AllowAnonymous]
     [IgnoreAntiforgeryToken]
-    public async Task<IActionResult> Token([FromBody] DeviceRequest request, CancellationToken ct)
+    public async Task<IActionResult> Token([FromBody] ClientKeyRequest request, CancellationToken ct)
     {
         try
         {

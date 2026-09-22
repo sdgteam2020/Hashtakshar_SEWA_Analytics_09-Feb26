@@ -1,11 +1,12 @@
 using HastaksharSewaAnalytics.Domain.Entities;
 using HastaksharSewaAnalytics.Domain.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace HastaksharSewaAnalytics.Infrastructure.Persistence;
 
-public sealed class HastaksharSewaAnalyticsDbContext : IdentityDbContext<ApplicationUser>
+public sealed class HastaksharSewaAnalyticsDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
 {
     public HastaksharSewaAnalyticsDbContext(DbContextOptions<HastaksharSewaAnalyticsDbContext> options)
         : base(options)
@@ -20,7 +21,8 @@ public sealed class HastaksharSewaAnalyticsDbContext : IdentityDbContext<Applica
     public DbSet<HastaksharSewaInstallation> HastaksharSewaInstallations => Set<HastaksharSewaInstallation>();
     public DbSet<ClientErrorLog> ClientErrorLogs => Set<ClientErrorLog>();
     public DbSet<DigitalSignDetail> DigitalSignDetails => Set<DigitalSignDetail>();
-    public DbSet<Device> Devices => Set<Device>();
+    public DbSet<ClientKey> ClientKeys => Set<ClientKey>();
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -31,7 +33,7 @@ public sealed class HastaksharSewaAnalyticsDbContext : IdentityDbContext<Applica
             b.Property(u => u.UserName).HasMaxLength(15);
             b.Property(u => u.NormalizedUserName).HasMaxLength(15);
         });
-
+      
         builder.ApplyConfigurationsFromAssembly(typeof(HastaksharSewaAnalyticsDbContext).Assembly);
     }
 }

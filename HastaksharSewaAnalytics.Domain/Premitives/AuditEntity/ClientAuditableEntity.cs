@@ -2,17 +2,17 @@
 
 namespace HastaksharSewaAnalytics.Domain.Premitives.AuditEntity;
 
-public abstract class AuditableEntity<TId> : Entity<TId>
+public abstract class ClientAuditableEntity<TId> : Entity<TId>
     where TId : notnull
 {
-    protected AuditableEntity(TId id) : base(id) { }
+    protected ClientAuditableEntity(TId id) : base(id) { }
 
-    public int CreatedBy { get; private set; } = 1; 
+    public int CreatedByClientId { get; private set; } 
     public DateTimeOffset CreatedAt { get; private set; } = DateTime.UtcNow;
 
     public void SetCreated(int createdBy)
     {
-        CreatedBy = createdBy;
+        CreatedByClientId = createdBy;
         CreatedAt = DateTimeOffset.UtcNow;
     }
 }

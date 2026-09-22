@@ -1,14 +1,14 @@
 using HastaksharSewaAnalytics.Application.Abstractions.Interfaces.Common;
 using HastaksharSewaAnalytics.Domain.Entities;
+using HastaksharSewaAnalytics.Domain.Premitives.Enums;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace HastaksharSewaAnalytics.Infrastructure.Services;
 
-internal sealed class MasterDataResolver
+public sealed class MasterDataResolver
 {
-    private const string HastaksharAppCode = "HASTAKSHARSEWA";
-    private const string HastaksharAppName = "Hastakshar Sewa";
+    private const string HastaksharAppName = "HastaksharSewa";
     private const string UnknownVersion = "UNKNOWN";
 
     private readonly IUnitOfWork _unitOfWork;
@@ -19,9 +19,56 @@ internal sealed class MasterDataResolver
         string version,
         string? createdBy,
         CancellationToken ct)
-        => GetOrCreateApplicationVersionAsync(HastaksharAppCode, HastaksharAppName, version, createdBy, ct);
+        => GetOrCreateApplicationVersionAsync(HastaksharAppName, version, createdBy, ct);
 
-    public Task<int> GetOrCreateApplicationVersionAsync(
+    public async Task<int> GetOrCreateClientAsync(
+        string? domainId,
+        string? ipAddress,
+        string? createdBy,
+     CancellationToken ct)
+    {
+        domainId = domainId?.Trim();
+        ipAddress = ipAddress?.Trim();
+
+        if (string.IsNullOrWhiteSpace(domainId) && string.IsNullOrWhiteSpace(ipAddress))
+            throw new ArgumentException("Either DomainId or IP Address is required.");
+
+        var clientRepo = _unitOfWork.Repository<ClientMaster, int>();
+
+        // Case 1: Only DomainId OR only IPAddress passed -> Get Client
+        if (string.IsNullOrWhiteSpace(ipAddress) || string.IsNullOrWhiteSpace(domainId))
+        {
+            var clientId = await clientRepo.GetScalarAsync(
+                selector: x => x.Id,
+                predicate: x =>
+                    (!string.IsNullOrWhiteSpace(domainId) && x.DomainId == domainId) ||
+                    (!string.IsNullOrWhiteSpace(ipAddress) && x.IPAddress == ipAddress),
+                cancellationToken: ct);
+
+            if (clientId > 0)
+                return clientId;
+
+            throw new KeyNotFoundException("Client not found.");
+        }
+
+        // Case 2: Both DomainId and IPAddress passed -> Create Client
+        var existingClientId = await clientRepo.GetScalarAsync(
+            selector: x => x.Id,
+            predicate: x => x.DomainId == domainId && x.IPAddress == ipAddress,
+            cancellationToken: ct);
+
+        if (existingClientId > 0)
+            return existingClientId;
+
+        var client = ClientMaster.Create(domainId, ipAddress);
+        
+        await clientRepo.AddAsync(client, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+
+        return client.Id;
+    }
+
+    public async Task<int> GetOrCreateApplicationVersionAsync(
         string appName,
         string? version,
         string? createdBy,
@@ -29,79 +76,15 @@ internal sealed class MasterDataResolver
     {
         if (string.IsNullOrWhiteSpace(appName))
             throw new ArgumentException("AppName is required.", nameof(appName));
-
-        var appCode = BuildApplicationCode(appName);
-        return GetOrCreateApplicationVersionAsync(appCode, appName.Trim(), version, createdBy, ct);
-    }
-
-    public async Task<int> GetOrCreateClientAsync(
-        string domainId,
-        string ipAddress,
-        string? externalDeviceId,
-        string? createdBy,
-        CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(domainId))
-            throw new ArgumentException("DomainId is required.", nameof(domainId));
-
-        domainId = domainId.Trim();
-        ipAddress = ipAddress.Trim();
-
-        int? devicePk = null;
-        if (!string.IsNullOrWhiteSpace(externalDeviceId))
-        {
-            var deviceRepo = _unitOfWork.Repository<Device, int>();
-            var id = await deviceRepo.GetScalarAsync(
-                selector: x => x.Id,
-                predicate: x => x.DeviceId == externalDeviceId.Trim(),
-                cancellationToken: ct);
-
-            if (id > 0)
-                devicePk = id;
-        }
-
-        var clientRepo = _unitOfWork.Repository<ClientMaster, int>();
-        var clientId = await clientRepo.GetScalarAsync(
-            selector: x => x.Id,
-            predicate: x => x.DomainId == domainId,
-            cancellationToken: ct);
-
-        if (clientId > 0)
-        {
-            var existing = await clientRepo.GetByIdAsync(clientId, ct);
-            if (existing != null &&
-                (!string.Equals(existing.IPAddress, ipAddress, StringComparison.OrdinalIgnoreCase) ||
-                 (devicePk.HasValue && existing.DeviceId != devicePk)))
-            {
-                existing.UpdateConnection(ipAddress, devicePk, createdBy ?? "System");
-                await _unitOfWork.SaveChangesAsync(ct);
-            }
-
-            return clientId;
-        }
-
-        var client = ClientMaster.Create(domainId, ipAddress, devicePk, createdBy);
-        await clientRepo.AddAsync(client, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
-        return client.Id;
-    }
-
-    private async Task<int> GetOrCreateApplicationVersionAsync(
-        string appCode,
-        string appName,
-        string? version,
-        string? createdBy,
-        CancellationToken ct)
-    {
         var appRepo = _unitOfWork.Repository<ApplicationMaster, int>();
         var appId = await appRepo.GetScalarAsync(
             selector: x => x.Id,
-            predicate: x => x.AppCode == appCode,
+            predicate: x => x.AppName == appName,
             cancellationToken: ct);
 
         if (appId <= 0)
         {
-            var app = ApplicationMaster.Create(appCode, appName, createdBy);
+            var app = ApplicationMaster.Create(appName);
             await appRepo.AddAsync(app, ct);
             await _unitOfWork.SaveChangesAsync(ct);
             appId = app.Id;
@@ -117,16 +100,10 @@ internal sealed class MasterDataResolver
         if (versionId > 0)
             return versionId;
 
-        var appVersion = ApplicationVersion.Create(appId, normalizedVersion, createdBy);
+        var appVersion = ApplicationVersion.Create(appId, normalizedVersion);
         await versionRepo.AddAsync(appVersion, ct);
         await _unitOfWork.SaveChangesAsync(ct);
         return appVersion.Id;
     }
-
-    private static string BuildApplicationCode(string appName)
-    {
-        var normalized = appName.Trim().ToUpperInvariant();
-        var hash = MD5.HashData(Encoding.UTF8.GetBytes(normalized));
-        return $"APP_{Convert.ToHexString(hash)[..12]}";
-    }
+    
 }

@@ -1,4 +1,5 @@
 using HastaksharSewaAnalytics.Domain.Premitives.AuditEntity;
+using HastaksharSewaAnalytics.Domain.Premitives.Enums;
 
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
@@ -10,7 +11,7 @@ public sealed class ApplicationVersion : AuditableEntity<int>
     public int ApplicationId { get; private set; }
     public string Version { get; private set; } = string.Empty;
 
-    public static ApplicationVersion Create(int applicationId, string version, string? createdBy = null)
+    public static ApplicationVersion Create(int applicationId, string version)
     {
         if (applicationId <= 0)
             throw new ArgumentOutOfRangeException(nameof(applicationId));
@@ -27,8 +28,7 @@ public sealed class ApplicationVersion : AuditableEntity<int>
             Version = version
         };
 
-        if (!string.IsNullOrWhiteSpace(createdBy))
-            entity.SetCreated(createdBy);
+        entity.SetCreated(GlobalVariables.UserId);
 
         return entity;
     }

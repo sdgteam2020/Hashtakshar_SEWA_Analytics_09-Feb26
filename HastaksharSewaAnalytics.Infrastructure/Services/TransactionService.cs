@@ -53,41 +53,89 @@ public sealed record TransactionService : ITransactionService
     }
 
     public async Task<bool> SaveDailyRunAsync(
-        SaveDailyRunRequest request,
-        CancellationToken ct = default)
+    SaveDailyRunRequest request,
+    CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
+
+        // Get Client
         var clientId = await _masterDataResolver.GetOrCreateClientAsync(
             request.DomainId,
             request.IpAddress,
-            request.DeviceId,
             request.CreatedBy,
             ct);
 
+
+        // Get Version
         var versionId = await _masterDataResolver.GetOrCreateHastaksharVersionAsync(
             request.Version,
             request.CreatedBy,
             ct);
 
-        var runDate = DateOnly.FromDateTime((request.RunOnDate ?? DateTimeOffset.UtcNow).UtcDateTime);
-        var repository = _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
 
-        var exists = await repository.CountAsync(
-            x => x.ClientId == clientId && x.RunOnDate == runDate,
+        var installationRepo =
+            _unitOfWork.Repository<HastaksharSewaInstallation, int>();
+
+
+        // Get existing installation
+        var installationId = await installationRepo.GetScalarAsync(
+            selector: x => x.Id,
+            predicate: x =>
+                x.CreatedByClientId == clientId &&
+                x.VersionId == versionId,
+            cancellationToken: ct);
+
+
+        // Create installation if not exists
+        if (installationId == 0)
+        {
+            var installation =
+                HastaksharSewaInstallation.Create(
+                    clientId,
+                    versionId);
+
+            await installationRepo.AddAsync(
+                installation,
+                ct);
+
+            await _unitOfWork.SaveChangesAsync(ct);
+
+            installationId = installation.Id;
+        }
+
+
+        var dailyRepo =
+            _unitOfWork.Repository<HastaksharSewaDailyRunLog, int>();
+
+
+        var today = DateOnly.FromDateTime(DateTime.Now);
+
+
+        var dailyExists = await dailyRepo.CountAsync(
+            x =>
+                x.CreatedByClientId == installationId &&
+                DateOnly.FromDateTime(x.CreatedAt.Date) == today,
             ct);
 
-        if (exists > 0)
+
+        if (dailyExists > 0)
             return true;
 
-        var dailyRunLog = HastaksharSewaDailyRunLog.Create(
-            clientId,
-            versionId,
-            runDate,
-            request.CreatedBy);
 
-        await repository.AddAsync(dailyRunLog, ct);
+        var dailyRun =
+            HastaksharSewaDailyRunLog.Create(
+                installationId);
+
+
+        await dailyRepo.AddAsync(
+            dailyRun,
+            ct);
+
+
         await _unitOfWork.SaveChangesAsync(ct);
+
+
         return true;
     }
 
@@ -100,7 +148,6 @@ public sealed record TransactionService : ITransactionService
         var clientId = await _masterDataResolver.GetOrCreateClientAsync(
             request.DomainId,
             request.IpAddress,
-            request.DeviceId,
             createdBy: null,
             ct: ct);
 
@@ -111,7 +158,7 @@ public sealed record TransactionService : ITransactionService
 
         var repository = _unitOfWork.Repository<HastaksharSewaInstallation, int>();
         var exists = await repository.CountAsync(
-            x => x.ClientId == clientId && x.VersionId == versionId,
+            x => x.CreatedByClientId == clientId && x.VersionId == versionId,
             ct);
 
         if (exists > 0)
@@ -119,8 +166,7 @@ public sealed record TransactionService : ITransactionService
 
         var installation = HastaksharSewaInstallation.Create(
             clientId,
-            versionId,
-            request.InstallDate);
+            versionId);
 
         await repository.AddAsync(installation, ct);
         await _unitOfWork.SaveChangesAsync(ct);

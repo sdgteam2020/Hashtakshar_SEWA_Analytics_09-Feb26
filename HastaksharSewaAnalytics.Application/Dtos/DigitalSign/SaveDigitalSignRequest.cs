@@ -7,10 +7,6 @@ public sealed record SaveDigitalSignRequest(
     string ValidFrom,
     string ValidTo,
     string SignedDateTime,
-    string? OriginForSign,
-    string? RefererForSign,
-    string? IpAddress,
     string? DocumentName,
-    string? DocumnetType,
-    string? DocumentHash = null
+    string? IPAddress
 );

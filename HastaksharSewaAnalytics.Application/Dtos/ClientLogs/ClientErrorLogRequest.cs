@@ -1,18 +1,9 @@
 namespace HastaksharSewaAnalytics.Application.Dtos.ClientLogs;
 
 public record ClientErrorLogRequest(
-    string IpAddress,
-    string MachineName,
-    string? UserName,
-    string OperatingSystem,
-    bool Is64Bit,
-    string SystemDirectory,
-    string AppName,
-    string? AppVersion,
+    string IpAddress, 
+    string MachineName,  
     string ErrorMessage,
-    string? StackTrace,
-    string? Extra,
-    Guid? RequestId = null,
-    string? DomainId = null,
-    string? DeviceId = null
+    string AppName,
+    string? AppVersion
 );

@@ -10,15 +10,10 @@ public sealed class HastaksharSewaDailyRunLogConfiguration : IEntityTypeConfigur
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedOnAdd();
-        builder.Property(x => x.RunOnDate).HasColumnType("date").IsRequired();
-        builder.HasIndex(x => new { x.ClientId, x.RunOnDate }).IsUnique();
-        builder.HasOne<ClientMaster>()
+        builder.HasIndex(x => new { x.CreatedByClientId, x.CreatedAt }).IsUnique();
+        builder.HasOne<HastaksharSewaInstallation>()
             .WithMany()
-            .HasForeignKey(x => x.ClientId)
-            .OnDelete(DeleteBehavior.Restrict);
-        builder.HasOne<ApplicationVersion>()
-            .WithMany()
-            .HasForeignKey(x => x.VersionId)
+            .HasForeignKey(x => x.CreatedByClientId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

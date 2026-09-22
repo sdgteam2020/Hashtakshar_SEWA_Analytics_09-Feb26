@@ -10,11 +10,10 @@ public sealed class HastaksharSewaInstallationConfiguration : IEntityTypeConfigu
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedOnAdd();
-        builder.Property(x => x.InstallDate).HasColumnType("timestamp with time zone").IsRequired();
-        builder.HasIndex(x => new { x.ClientId, x.VersionId }).IsUnique();
+        builder.HasIndex(x => new { x.CreatedByClientId, x.VersionId }).IsUnique();
         builder.HasOne<ClientMaster>()
             .WithMany()
-            .HasForeignKey(x => x.ClientId)
+            .HasForeignKey(x => x.CreatedByClientId)
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<ApplicationVersion>()
             .WithMany()

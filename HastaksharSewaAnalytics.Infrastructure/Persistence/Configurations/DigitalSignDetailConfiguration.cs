@@ -11,10 +11,13 @@ public sealed class DigitalSignDetailConfiguration : IEntityTypeConfiguration<Di
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedOnAdd();
         builder.Property(x => x.SignDateTime).HasColumnType("timestamp with time zone");
-        builder.Property(x => x.DocumentHash).HasMaxLength(256);
         builder.HasOne<VaultMaster>()
             .WithMany()
             .HasForeignKey(x => x.VaultMasterId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<ClientMaster>()
+            .WithMany()
+            .HasForeignKey(x => x.CreatedByClientId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

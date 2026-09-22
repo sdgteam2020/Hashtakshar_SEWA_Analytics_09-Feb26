@@ -2,38 +2,23 @@ using HastaksharSewaAnalytics.Domain.Premitives.AuditEntity;
 
 namespace HastaksharSewaAnalytics.Domain.Entities;
 
-public sealed class ClientMaster : AuditableEntity<int>
+public sealed class ClientMaster : ClientRootAuditableEntity<int>
 {
     private ClientMaster() : base(0) { }
     private ClientMaster(int id) : base(id) { }
 
-    public string DomainId { get; private set; } = string.Empty;
+    public string DomainId { get; private set; } = string.Empty;    // domain name of the client machine, unique for each client
     public string IPAddress { get; private set; } = string.Empty;
-    public int? DeviceId { get; private set; }
-
+   
     public static ClientMaster Create(
         string domainId,
-        string ipAddress,
-        int? deviceId = null,
-        string? createdBy = null)
+        string ipAddress)
     {
         var entity = new ClientMaster(0);
         entity.SetDomainId(domainId);
         entity.SetIpAddress(ipAddress);
-        entity.DeviceId = deviceId;
-
-        if (!string.IsNullOrWhiteSpace(createdBy))
-            entity.SetCreated(createdBy);
-
+        entity.SetCreatedAt();
         return entity;
-    }
-
-    public void UpdateConnection(string ipAddress, int? deviceId, string modifiedBy)
-    {
-        SetIpAddress(ipAddress);
-        if (deviceId.HasValue)
-            DeviceId = deviceId;
-        SetModified(modifiedBy);
     }
 
     private void SetDomainId(string domainId)

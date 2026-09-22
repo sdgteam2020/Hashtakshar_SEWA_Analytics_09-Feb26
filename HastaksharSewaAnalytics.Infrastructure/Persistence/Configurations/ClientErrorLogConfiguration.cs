@@ -10,15 +10,14 @@ public sealed class ClientErrorLogConfiguration : IEntityTypeConfiguration<Clien
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedOnAdd();
-        builder.Property(x => x.ErrorMessage).IsRequired();
-        builder.HasIndex(x => x.RequestId).IsUnique();
+        builder.Property(x => x.ErrorMessage).IsRequired();     
         builder.HasOne<ClientMaster>()
             .WithMany()
-            .HasForeignKey(x => x.ClientId)
+            .HasForeignKey(x => x.CreatedByClientId)
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<ApplicationVersion>()
             .WithMany()
             .HasForeignKey(x => x.ApplicationVersionId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict);        
     }
 }

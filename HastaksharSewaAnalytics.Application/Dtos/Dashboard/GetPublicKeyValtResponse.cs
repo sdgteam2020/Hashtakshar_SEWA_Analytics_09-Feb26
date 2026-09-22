@@ -7,6 +7,6 @@ public sealed record GetPublicKeyValtResponse(
     bool TokenValid,
     string ValidFrom,
     string ValidTo,
-    string CreatedBy,
+    int CreatedBy,
     string CreatedAt
     );

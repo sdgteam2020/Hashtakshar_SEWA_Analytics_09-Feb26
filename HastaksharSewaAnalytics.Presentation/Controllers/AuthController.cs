@@ -142,7 +142,7 @@ public sealed class AuthController : Controller
 
                 var claims = new List<Claim>
                             {
-                                new(JwtRegisteredClaimNames.Sub, user.Id),
+                                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                                 new(JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
                                 new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
                                 new("token_type", "user"),
