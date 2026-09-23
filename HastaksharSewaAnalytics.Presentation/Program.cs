@@ -50,6 +50,8 @@ builder.Services
         options.User.RequireUniqueEmail = false;
         options.SignIn.RequireConfirmedAccount = false;
         options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 3;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
     })
     .AddEntityFrameworkStores<HastaksharSewaAnalyticsDbContext>();
 

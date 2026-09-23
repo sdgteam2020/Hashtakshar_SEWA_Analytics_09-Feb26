@@ -173,7 +173,7 @@ public sealed class AuthController : Controller
             }
 
             var error = result.IsLockedOut
-                ? "Account locked due to multiple failed attempts. Try again later."
+                ? "Account locked due to multiple failed attempts. Try again 10 minutes later."
                 : "Invalid username or password.";
 
             if (isAjax) return BadRequest(new { message = error });
