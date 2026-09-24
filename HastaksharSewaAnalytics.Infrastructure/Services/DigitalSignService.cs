@@ -11,6 +11,7 @@ public sealed record DigitalSignService : IDigitalSignService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly MasterDataResolver _masterDataResolver;
+    private readonly TimeSpan _istOffset = TimeSpan.FromHours(5.5);
 
     public DigitalSignService(IUnitOfWork unitOfWork, MasterDataResolver masterDataResolver)
     {
@@ -83,7 +84,7 @@ public sealed record DigitalSignService : IDigitalSignService
             x.VaultMasterId,
             x.IPAddress,
             x.DocumentName ?? string.Empty,
-            DateTimeValueParser.ToApiString(x.SignDateTime)
+            x.SignDateTime.ToOffset(_istOffset).ToString("dd-MM-yyyy hh:mm tt")
         )).ToList();
 
         return (data, totalCount, filteredCount);

@@ -57,7 +57,7 @@ builder.Services
 
 builder.Services.Configure<SecurityStampValidatorOptions>(o =>
 {
-    o.ValidationInterval = TimeSpan.Zero;
+    o.ValidationInterval = TimeSpan.FromMinutes(5);
 });
 
 var key = builder.Configuration["Jwt:Key"]!;
@@ -134,6 +134,7 @@ builder.Services.ConfigureApplicationCookie(options =>
             {
                 context.RejectPrincipal();
                 await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+                context.HttpContext.Session.Clear();
             }
         },
 

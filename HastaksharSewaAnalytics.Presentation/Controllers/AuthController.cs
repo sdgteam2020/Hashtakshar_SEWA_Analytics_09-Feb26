@@ -107,18 +107,6 @@ public sealed class AuthController : Controller
             }
 
 
-            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
-
-            await _signInManager.SignOutAsync();
-
-            HttpContext.Session.Clear();
-
-            Response.Cookies.Delete(".AspNetCore.Identity.Application");
-            Response.Cookies.Delete(".AspNetCore.Session");
-
-
-            await _userManager.UpdateSecurityStampAsync(user);
-
             var result = await _signInManager.PasswordSignInAsync(
                 user,
                 password,

@@ -9,21 +9,50 @@ internal static class DateTimeValueParser
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException($"{fieldName} is required.", fieldName);
 
-        if (!DateTimeOffset.TryParse(
-                value.Trim(),
+
+        value = value.Trim();
+
+
+        string[] formats =
+        {
+            "dd-MM-yyyy HH:mm:ss zzz",
+            "dd-MM-yyyy HH:mm zzz",
+            "dd-MM-yyyy HH:mm:ss",
+            "yyyy-MM-ddTHH:mm:sszzz",
+            "yyyy-MM-ddTHH:mm:ss.fffzzz",
+            "O"
+        };
+
+
+        if (DateTimeOffset.TryParseExact(
+                value,
+                formats,
                 CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                DateTimeStyles.None,
                 out var parsed))
         {
-            throw new ArgumentException($"{fieldName} must be a valid date/time value.", fieldName);
+            return parsed.ToUniversalTime(); ;
         }
 
-        return parsed;
+
+        throw new ArgumentException(
+            $"{fieldName} must be a valid date/time value.",
+            fieldName);
     }
 
-    public static DateTimeOffset? ParseOptional(string? value, string fieldName)
-        => string.IsNullOrWhiteSpace(value) ? null : ParseRequired(value, fieldName);
+
+    public static DateTimeOffset? ParseOptional(
+        string? value,
+        string fieldName)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : ParseRequired(value, fieldName);
+    }
+
 
     public static string ToApiString(DateTimeOffset? value)
-        => value?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture) ?? string.Empty;
+      => value?.ToUniversalTime()
+          .ToString("O", CultureInfo.InvariantCulture)
+          ?? string.Empty;
 }
