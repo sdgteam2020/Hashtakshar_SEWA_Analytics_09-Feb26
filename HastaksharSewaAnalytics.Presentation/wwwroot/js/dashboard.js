@@ -1,8 +1,24 @@
-﻿async function fetchJson(url) {
-    const response = await fetch(url);
+﻿async function fetchJson(url, method = "GET") {
+
+    const options = {
+        method: method,
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/json"
+        }
+    };
+
+    // POST request requires body
+    if (method === "POST") {
+        options.body = JSON.stringify({});
+    }
+
+    const response = await fetch(url, options);
+
     if (!response.ok) {
         throw new Error(`Request failed for ${url}: ${response.status}`);
     }
+
     return response.json();
 }
 
@@ -39,11 +55,11 @@ async function loadDashboardCounts() {
         const signedEl = document.querySelector('[data-count="signed"]');
 
         const [totalInstallData, todayUserData, logsData, vaultData, signData] = await Promise.all([
-            fetchJson('/Dashboard/TotalInstallCount'),
-            fetchJson('/Dashboard/TodayUserCount'),
-            fetchJson('/Dashboard/GetClientErrorLogsCount'),
-            fetchJson('/Dashboard/GetVaultDataCount'),
-            fetchJson('/Dashboard/GetDigitalSignCount')
+            fetchJson('/Dashboard/TotalInstallCount', 'POST'),
+            fetchJson('/Dashboard/TodayUserCount', 'POST'),
+            fetchJson('/Dashboard/GetClientErrorLogsCount', 'POST'),
+            fetchJson('/Dashboard/GetVaultDataCount', 'POST'),
+            fetchJson('/Dashboard/GetDigitalSignCount', 'POST')
         ]);
 
         if (applicationsEl) applicationsEl.textContent = totalInstallData.totalInstallations ?? '0';
@@ -51,6 +67,7 @@ async function loadDashboardCounts() {
         if (logsEl) logsEl.textContent = logsData.clientErrorLogsCount ?? '0';
         if (vaultEl) vaultEl.textContent = vaultData.vaultDataCount ?? '0';
         if (signedEl) signedEl.textContent = signData.digitalSignCount ?? '0';
+
     } catch (error) {
         console.error('Failed to load dashboard counts.', error);
     }

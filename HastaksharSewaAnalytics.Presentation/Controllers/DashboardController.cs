@@ -19,7 +19,7 @@ public sealed class DashboardController : Controller
 
     public IActionResult Dashboard() => View();
 
-    [HttpGet("/Dashboard/TotalInstallCount")]
+    [HttpPost("/Dashboard/TotalInstallCount")]
     [Authorize]
     public async Task<IActionResult> TotalInstallCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
@@ -39,7 +39,7 @@ public sealed class DashboardController : Controller
         return Json(new { totalInstallations = totalCount });
     }
 
-    [HttpGet("/Dashboard/TodayUserCount")]
+    [HttpPost("/Dashboard/TodayUserCount")]
     [Authorize]
     public async Task<IActionResult> TodayUserCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
@@ -119,7 +119,7 @@ public sealed class DashboardController : Controller
         }
     }
 
-    [HttpGet]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> GetClientErrorLogsCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
@@ -170,7 +170,7 @@ public sealed class DashboardController : Controller
         }
     }
 
-    [HttpGet]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> GetVaultDataCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
@@ -221,7 +221,7 @@ public sealed class DashboardController : Controller
         }
     }
 
-    [HttpGet]
+    [HttpPost]
     [Authorize]
     public async Task<IActionResult> GetDigitalSignCount([FromHeader(Name = "X-Requested-With")] string xrw)
     {
