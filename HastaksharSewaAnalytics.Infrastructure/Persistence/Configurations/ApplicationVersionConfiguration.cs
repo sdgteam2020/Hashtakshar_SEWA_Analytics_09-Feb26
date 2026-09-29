@@ -1,4 +1,5 @@
 using HastaksharSewaAnalytics.Domain.Entities;
+using HastaksharSewaAnalytics.Domain.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,5 +17,9 @@ public sealed class ApplicationVersionConfiguration : IEntityTypeConfiguration<A
             .WithMany()
             .HasForeignKey(x => x.ApplicationId)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<ApplicationUser>()
+           .WithMany()
+           .HasForeignKey(x => x.CreatedBy)
+           .OnDelete(DeleteBehavior.Restrict);
     }
 }
