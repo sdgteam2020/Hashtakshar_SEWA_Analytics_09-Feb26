@@ -219,7 +219,7 @@ public sealed record DashboardService : IDashboardService
             x.IpAddress,
             x.MachineName ?? string.Empty,
             x.AppVersion,
-            x.CreatedAt.ToOffset(_istOffset).ToString("dd-MM-yyyy HH:mm")
+            x.CreatedAt.ToOffset(_istOffset).ToString("dd-MM-yyyy HH:mm tt")
         )).ToList();
 
         return (data, totalCount, filteredCount);
