@@ -46,7 +46,7 @@ public sealed class AuthController : Controller
 
     [HttpPost, AllowAnonymous]
     [ValidateAntiForgeryToken]
-    [Consumes("multipart/form-data", "application/x-www-form-urlencoded")]
+    //[Consumes("multipart/form-data", "application/x-www-form-urlencoded")]
     public async Task<IActionResult> Login([FromForm] LoginRequest req, CancellationToken ct)
     {
         bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest"
