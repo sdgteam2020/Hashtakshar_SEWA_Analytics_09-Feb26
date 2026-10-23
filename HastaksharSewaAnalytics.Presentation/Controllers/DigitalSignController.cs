@@ -26,6 +26,11 @@ public class DigitalSignController : ControllerBase
     {
         try
         {
+            if(!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { Errors = errors });
+            }
             var result = await _digitalSignService.SaveDigitalSign(saveDigitalSignRequest, cancellationToken);
             if (result)
             {

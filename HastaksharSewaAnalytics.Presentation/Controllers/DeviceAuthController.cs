@@ -23,6 +23,11 @@ public sealed class DeviceAuthController : ControllerBase
     {
         try
         {
+            if(!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { Errors = errors });
+            }
             var token = await _deviceService.AuthenticateDeviceAsync(request, ct);
             if (token == null) return Unauthorized(new { message = "Invalid device credentials." });
             return Ok(token);

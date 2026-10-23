@@ -24,6 +24,11 @@ public class TransactionController : Controller
     {
         try
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { Errors = errors });
+            }
             var result = await _transactionRepository.SaveVaultMasterData(obj);
             if (result == true)
             {
@@ -32,7 +37,7 @@ public class TransactionController : Controller
             return BadRequest(result);
         }
         catch (Exception ex)
-        { 
+        {
             Console.WriteLine($"Error in SaveVaultMasterData: {ex.Message}");
             ErrorLog.LogErrorToFile(ex, $"Error in SaveVaultMasterData for SerialNo: {obj.SerialNo}");
             return BadRequest(false);
@@ -46,6 +51,11 @@ public class TransactionController : Controller
     {
         try
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { Errors = errors });
+            }
             var result = await _transactionRepository.SaveInstallationAsync(obj);
             if (result == true)
             {
@@ -54,7 +64,7 @@ public class TransactionController : Controller
             return BadRequest(result);
         }
         catch (Exception ex)
-        { 
+        {
             Console.WriteLine($"Error in SaveInstallationAsync: {ex.Message}");
             ErrorLog.LogErrorToFile(ex, $"Error in SaveInstallationAsync for DomainId: {obj.DomainId}");
             return BadRequest(false);
@@ -68,6 +78,11 @@ public class TransactionController : Controller
     {
         try
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { Errors = errors });
+            }
             var result = await _transactionRepository.SaveDailyRunAsync(obj);
             if (result == true)
             {
@@ -88,7 +103,12 @@ public class TransactionController : Controller
     public async Task<IActionResult> Search([FromBody] VaultSearchRequest req, CancellationToken ct)
     {
         try
-        { 
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { Errors = errors });
+            }
             var term = (req?.ArmyNo ?? req?.Term ?? req?.Name ?? "").Trim();
 
             if (term.Length < 2)
