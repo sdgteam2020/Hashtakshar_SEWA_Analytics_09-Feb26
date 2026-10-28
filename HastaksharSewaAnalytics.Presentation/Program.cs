@@ -182,9 +182,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontEnd", policy =>
     {
         policy.WithOrigins(Environment.GetEnvironmentVariable("HSewaCorsSetting__AllowedOrigins")!)
-              .AllowAnyHeader()
-              .AllowAnyMethod()
+              .WithHeaders("Authorization", "Content-Type", "X-Requested-With")
+              .WithMethods("GET", "POST", "HEAD")
               .AllowCredentials();
+      
+        // Cache preflight for 5 minutes
+        policy.SetPreflightMaxAge(TimeSpan.FromMinutes(20));
+
     });
 });
 
@@ -246,6 +250,61 @@ app.Use(async (ctx, next) =>
         await ctx.Response.WriteAsync("Invalid Host header.");
         return;
     }
+    // ========== 0) BLOCK DANGEROUS HTTP METHODS FIRST ==========
+    var blockedMethods = new[] { "OPTIONS", "TRACE", "TRACK", "CONNECT" };
+
+    if (blockedMethods.Contains(ctx.Request.Method, StringComparer.OrdinalIgnoreCase))
+    {
+        // Log for monitoring (optional)
+        app.Logger.LogWarning($"Security: Blocked {ctx.Request.Method} request to {ctx.Request.Path}");
+
+        ctx.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+        ctx.Response.Headers["Allow"] = "GET, HEAD, POST"; // Only allowed methods
+        await ctx.Response.WriteAsync("Method Not Allowed");
+        return; // Stop further processing
+    }
+
+    ctx.Response.OnStarting(() =>
+    {
+        // Remove Server header
+        ctx.Response.Headers.Remove("Server");
+        ctx.Response.Headers.Remove("Expires");
+        ctx.Response.Headers.Remove("X-Powered-By");
+        ctx.Response.Headers.Remove("x-aspnet-version");
+        return Task.CompletedTask;
+    });
+
+
+    // 1) Content Security Policy
+    ctx.Response.Headers["Content-Security-Policy"] =
+        "default-src 'self'; " +
+        "script-src 'self'; " +
+        "style-src 'self'; " + // allow Bootstrap inline styles
+        "img-src 'self' data:; " +
+        "font-src 'self' data:; " +
+        "connect-src 'self'; " +
+        "frame-ancestors 'self'; " +
+        "base-uri 'self'; " +
+        "form-action 'self';";
+
+    // 2) X-Frame-Options (align with frame-ancestors)
+    ctx.Response.Headers["X-Frame-Options"] = "DENY";
+
+    // 3) Referrer-Policy
+    ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+
+    // Extra good headers
+    ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    ctx.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+
+    // Use HSTS only on HTTPS + production
+    ctx.Response.Headers["Strict-Transport-Security"] =
+        "max-age=31536000; includeSubDomains; preload";
+
+    // Hide tech details where possible
+    ctx.Response.Headers.Remove("Server");
+    ctx.Response.Headers.Remove("X-Powered-By");
+    ctx.Response.Headers.Remove("x-aspnet-version");
 
     await next();
 });
@@ -255,25 +314,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
-app.Use(async (ctx, next) =>
-{
-    ctx.Response.Headers["X-Frame-Options"] = "DENY";
-
-    ctx.Response.Headers["Content-Security-Policy"] =
-        "default-src 'self'; " +
-        "script-src 'self'; " +
-        "style-src 'self'; " +
-        "img-src 'self' data:; " +
-        "font-src 'self' data:; " +
-        "connect-src 'self'; " +
-        "frame-ancestors 'none'; " +
-        "form-action 'self'; " +
-        "base-uri 'self'; " +
-        "object-src 'none';";
-
-    await next();
-});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

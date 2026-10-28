@@ -8,6 +8,7 @@ namespace HastaksharSewaAnalytics.Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Policy = "DeviceOnly")]
 public class DigitalSignController : ControllerBase
 {
     private readonly ILogger<DigitalSignController> _logger;

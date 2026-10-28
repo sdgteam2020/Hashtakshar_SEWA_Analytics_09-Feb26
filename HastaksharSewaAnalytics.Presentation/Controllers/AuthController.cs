@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 
 namespace HastaksharSewaAnalytics.Presentation.Controllers;
 
+[Authorize]
 public sealed class AuthController : Controller
 {
     public const string SessionKeySalt = "_Salt";
@@ -46,7 +47,6 @@ public sealed class AuthController : Controller
 
     [HttpPost, AllowAnonymous]
     [ValidateAntiForgeryToken]
-    //[Consumes("multipart/form-data", "application/x-www-form-urlencoded")]
     public async Task<IActionResult> Login([FromForm] LoginRequest req, CancellationToken ct)
     {
         bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest"
@@ -390,4 +390,10 @@ public sealed class AuthController : Controller
     [Authorize]
     [HttpGet]
     public IActionResult PingAuth() => Ok(new { ok = true });
+
+    [HttpGet("test-crash")]
+    public IActionResult TestCrash()
+    {
+        throw new Exception("This is a simulated production crash!");
+    }
 }

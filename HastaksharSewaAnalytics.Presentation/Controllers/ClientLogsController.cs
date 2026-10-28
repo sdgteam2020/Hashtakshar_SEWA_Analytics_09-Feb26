@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HastaksharSewaAnalytics.Presentation.Controllers;
 
+[Authorize(Policy = "DeviceOnly")]
 public class ClientLogsController : Controller
 {
     private readonly ILogger<ClientLogsController> _logger;

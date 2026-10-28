@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HastaksharSewaAnalytics.Presentation.Controllers;
 
 [ApiController]
+[Authorize(Policy = "DeviceOnly")]
 public class TransactionController : Controller
 {
     private readonly ITransactionService _transactionRepository;

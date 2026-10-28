@@ -107,6 +107,8 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
         if (!res.ok) {
             toastr.error(data?.message || "Login failed.");
+            document.getElementById("loginUsername").value = username;
+            document.getElementById("loginPassword").value = password;
             return;
         }
 
@@ -117,6 +119,8 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         }, 400);
 
     } catch (err) {
+        document.getElementById("loginUsername").value = username;
+        document.getElementById("loginPassword").value = password;
         console.error("Login request failed:", err);
         toastr.error("Network error. Please try again.");
     }
