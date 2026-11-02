@@ -259,8 +259,7 @@ public sealed class DashboardController : Controller
             start = Math.Max(start, 0);
             length = Math.Clamp(length, 1, 100);
 
-            var result = await _digitalSignService.GetDigitalSignListAsync(
-                start, length, searchValue, cancellationToken);
+            var result = await _digitalSignService.GetDigitalSignListAsync(start, length, searchValue, cancellationToken);
 
             return DataTableJson(draw, result.Data, result.TotalCount, result.FilteredCount);
         }

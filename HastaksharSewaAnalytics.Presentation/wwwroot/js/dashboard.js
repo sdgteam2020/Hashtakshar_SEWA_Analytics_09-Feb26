@@ -37,7 +37,23 @@ function serverSideAjax(url) {
         type: 'POST',
         dataSrc: 'data',
         data: function (d) {
-            d.searchValue = d.search && d.search.value ? d.search.value : '';
+            //d.searchValue = d.search && d.search.value ? d.search.value : '';
+            // 1. needed field data keeps in variables
+            let draw = d.draw;
+            let start = d.start;
+            let length = d.length;
+            let searchValue = d.search && d.search.value ? d.search.value : '';
+
+            // 2. deleting fields that generating by DataTables 
+            for (let key in d) {
+                delete d[key];
+            }
+
+            // 3. only fields assign that needs to send
+            d.draw = draw;
+            d.start = start;
+            d.length = length;
+            d.searchValue = searchValue;
         }
     };
 }
@@ -105,6 +121,7 @@ $(function () {
                 searchDelay: 500,
                 pageLength: 10,
                 ajax: serverSideAjax('/Dashboard/GetApplications'),
+
                 columns: [
                     {
                         data: null,
